@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom';
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from './store/useAuthStore';
 import { GuestRoute, PrivateRoute } from './utils/ProtectedRoute';
 
@@ -11,7 +11,8 @@ import Settings from './components/Settings'
 import Login from './components/auth/Login'
 import Register from './components/auth/Register'
 import ThreadDetail from './components/page/ThreadDetail';
-import Profile from './components/Profile';
+import Profile from './components/page/Profile';
+import SearchResults from './components/page/SearchResults';
 
 function App() {
   const [isSideBarOpen, setIsSideBarOpen] = useState(false)
@@ -19,6 +20,7 @@ function App() {
   const isActive = (path) => location.pathname === path
   const isLoginPage = location.pathname === '/login' || location.pathname === '/register';
   const user = useAuthStore((state) => state.user);
+  const navigate = useNavigate()
 
   const navItems = [
     { name: 'Home', icon: 'home', path: '/' },
@@ -71,14 +73,9 @@ function App() {
       
       {!isLoginPage && (
         <header className="md:hidden sticky top-0 w-full z-50 flex justify-between items-center px-4 py-3 bg-[#0f1422]/80 backdrop-blur-md border-b border-white/10 shadow-[0_1px_10px_rgba(255,255,255,0.03)]">
-          <div className="text-xl font-bold tracking-tight">Threads</div>
+          <div className="text-xl font-bold tracking-tight">Jokothread</div>
           <div className="flex items-center gap-1">
-            <button className="text-slate-400 hover:text-white rounded-full p-2 transition-colors active:scale-95">
-              <span className="material-symbols-outlined text-[22px]">add_circle</span>
-            </button>
-            <button className="text-slate-400 hover:text-white rounded-full p-2 transition-colors active:scale-95">
-              <span className="material-symbols-outlined text-[22px]">more_vert</span>
-            </button>
+            <span onClick={() => navigate('/explore')} className="material-symbols-outlined text-[22px]">search</span>
           </div>
         </header>
       )}
@@ -88,7 +85,7 @@ function App() {
         <nav className={`hidden md:flex flex-col h-screen fixed left-0 top-0 z-40 bg-[#161d30]/60 backdrop-blur-lg border-r border-white/10 p-3 justify-between transition-all duration-300 shadow-[1px_0_15px_rgba(255,255,255,0.02)] ${isSideBarOpen ? 'w-64' : 'w-20'}`}>
           <div className="flex flex-col gap-5">
             <div className="flex items-center justify-between px-2 py-1.5">
-              {isSideBarOpen && <h1 className="text-lg font-bold tracking-wider">THREADS</h1>}
+              {isSideBarOpen && <h1 className="text-lg font-bold tracking-wider">Jokothread</h1>}
               <button
                 onClick={() => setIsSideBarOpen(!isSideBarOpen)}
                 className={`text-slate-400 hover:text-white p-2 rounded-xl bg-slate-900/50 hover:bg-slate-900 transition-all ${!isSideBarOpen && 'mx-auto'}`}
@@ -184,6 +181,7 @@ function App() {
           <Route path="/explore" element={<SearchExplore />} />
           <Route path="/thread/:id" element={<ThreadDetail />} />
           <Route path="/profile/:id" element={<Profile />} />
+          <Route path="/search/:query" element={<SearchResults />} />
 
           <Route element={<PrivateRoute />}>
             <Route path="/messages" element={<Messages />} />

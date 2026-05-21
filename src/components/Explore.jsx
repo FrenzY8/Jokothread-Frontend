@@ -1,74 +1,177 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import PostCard from './elements/PostCard'
 
 function Explore() {
+    const [search, setSearch] = useState('')
+    const navigate = useNavigate()
+
+    const {
+        data,
+        isLoading
+    } = useQuery({
+        queryKey: ['explore-suggestions'],
+
+        queryFn: async () => {
+            const response = await fetch(
+                `${import.meta.env.VITE_BACKEND}/explore/suggestions`
+            )
+
+            const result = await response.json()
+
+            if (!response.ok) {
+                throw new Error(result.message || 'Gagal mengambil explore')
+            }
+
+            return result
+        }
+    })
+
+    const suggestedUsers = data?.users || []
+    const trendingThreads = data?.threads || []
+
+    const handleSubmit = (e) => {
+        e.preventDefault()
+
+        if (!search.trim()) return
+
+        navigate(`/search/${encodeURIComponent(search.trim())}`)
+    }
+
     return (
-        <div className="w-full max-w-[580px] mx-auto px-4 py-4 flex flex-col gap-3">
-            <div className="w-full max-w-[600px] px-container-margin-mobile md:px-0 pt-stack-md flex flex-col gap-5">
-                <section className="sticky top-[72px] md:top-stack-md z-30 glass-panel p-4 rounded-2xl border border-white/10 shadow-xl bg-[#161d30]/60 backdrop-blur-md">
+        <div className="w-full max-w-[580px] mx-auto px-4 py-4 flex flex-col gap-5">
+
+            <section className="sticky top-[72px] md:top-4 z-30 glass-panel p-4 rounded-2xl border border-white/10 shadow-xl bg-[#161d30]/60 backdrop-blur-md">
+                <form onSubmit={handleSubmit}>
                     <div className="relative group">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <span className="material-symbols-outlined text-outline group-focus-within:text-primary transition-colors">
                                 search
                             </span>
                         </div>
+
                         <input
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
                             className="w-full bg-surface-container/50 backdrop-blur-[20px] border border-white/10 text-on-surface rounded-full py-4 pl-12 pr-4 font-body-md placeholder:text-outline-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-lg transition-all"
                             placeholder="Cari topik..."
                             type="text"
                         />
                     </div>
-                </section>
-                <section className="glass-panel p-4 rounded-2xl border border-white/10 bg-[#161d30]/40 backdrop-blur-md">
-                    <div className="flex justify-between items-center mb-stack-sm">
-                        <h2 className="font-headline-md text-headline-md text-on-surface">
-                            Suggested for you
-                        </h2>
-                        <a className="text-primary font-label-sm hover:underline" href="#">
-                            See all
-                        </a>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-2 gap-gutter">
-                        <div className="glass-panel p-stack-md rounded-[24px] flex flex-col items-center text-center gap-unit hover:bg-white/10 transition-colors cursor-pointer">
-                            <img
-                                alt="Profile of @designmaster"
-                                className="w-16 h-16 rounded-full object-cover border-2 border-primary/30"
-                                data-alt="A portrait of a male designer looking thoughtfully off-camera. He is wearing modern casual clothing. The background is a slightly blurred office setting with warm, ambient lighting. The style is professional yet approachable, fitting for a modern social media profile."
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAEMnmowOJxl7HcCqhHIok0TzG4rOlDgAjgeSGnM61uJKDj_aki0V6rgZ1k48W4ykpKgg3VdDs5VMOtU_5pr4ViX1ThzcUNXx5ewTfvPL1Nucc6ugjylaDLM1B6tzlj2nmO3VAucAWeVzrqFVpFwD3V6pgNhJkQqB9Qn3CVSI49w6yIs53Y7JxmFThVKPmgR0kS0lOGvw0tr9M9QuK92Vd2cw1l4mEQaYJ57qmq3TJsnMumXFFFDn99zmyd2tN6Jzz-y-SYoezrZLv"
-                            />
-                            <div>
-                                <div className="font-label-lg font-bold text-on-surface">
-                                    Alex River
+                </form>
+            </section>
+
+            {isLoading ? (
+                <div className="flex flex-col gap-4">
+
+                    <div className="bg-[#161d30]/40 border border-white/10 rounded-2xl p-4 animate-pulse">
+                        <div className="h-5 w-32 bg-white/10 rounded mb-4" />
+
+                        <div className="flex flex-col gap-4">
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i} className="flex items-center gap-3">
+                                    <div className="w-14 h-14 rounded-full bg-white/10" />
+
+                                    <div className="flex-1">
+                                        <div className="h-4 w-32 bg-white/10 rounded mb-2" />
+                                        <div className="h-3 w-24 bg-white/10 rounded" />
+                                    </div>
                                 </div>
-                                <div className="font-body-md text-body-md text-on-surface-variant text-sm">
-                                    @designmaster
-                                </div>
-                            </div>
-                            <button className="mt-2 w-full bg-white/15 hover:bg-white/25 text-on-surface font-label-sm py-2 rounded-full border border-white/20 transition-colors">
-                                Follow
-                            </button>
-                        </div>
-                        <div className="glass-panel p-stack-md rounded-[24px] flex flex-col items-center text-center gap-unit hover:bg-white/10 transition-colors cursor-pointer">
-                            <img
-                                alt="Profile of @techsarah"
-                                className="w-16 h-16 rounded-full object-cover border-2 border-primary/30"
-                                data-alt="A vibrant portrait of a female tech enthusiast smiling brightly at the camera. She is in a well-lit indoor environment with soft, cool-toned lighting. The image conveys energy and professionalism, suitable for a tech influencer's profile picture."
-                                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbgWyukNlAA57xTE6ouLBiJqgn4VipU6Ysuqxbc-ZDWcbjQnGBpgE1P-Wn99fZ7URtgx5MeNhOjf5gpLyKRkEODvacuFV5hlj3R9KfqJDgtrXx1dyY7ezW4duSLR2ZPp07C1xDxXu7Jn3xQa7WC5dt0fyCRMvWdreJE-EILsv3QvPY4OhJzZFZvHv2zaVZtSG97r6sdorT66GhYmCporayimFxPPHVKR0uvBH0_L0vg7Vz951GXNHgFFIll65Yi2A3JVjR3pfhBadV"
-                            />
-                            <div>
-                                <div className="font-label-lg font-bold text-on-surface">
-                                    Sarah Chen
-                                </div>
-                                <div className="font-body-md text-body-md text-on-surface-variant text-sm">
-                                    @techsarah
-                                </div>
-                            </div>
-                            <button className="mt-2 w-full bg-white/15 hover:bg-white/25 text-on-surface font-label-sm py-2 rounded-full border border-white/20 transition-colors">
-                                Follow
-                            </button>
+                            ))}
                         </div>
                     </div>
-                </section>
-            </div>
+
+                    <div className="bg-[#161d30]/40 border border-white/10 rounded-2xl p-4 animate-pulse">
+                        <div className="h-5 w-40 bg-white/10 rounded mb-4" />
+
+                        <div className="flex flex-col gap-3">
+                            {[...Array(2)].map((_, i) => (
+                                <div key={i} className="h-32 rounded-2xl bg-white/5" />
+                            ))}
+                        </div>
+                    </div>
+
+                </div>
+            ) : (
+                <>
+                    <section className="glass-panel p-4 rounded-2xl border border-white/10 bg-[#161d30]/40 backdrop-blur-md">
+
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-[18px] font-semibold text-white">
+                                Suggested Users
+                            </h2>
+
+                            <span className="text-[12px] text-slate-500">
+                                Paling populer
+                            </span>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+
+                            {suggestedUsers.map((user) => (
+                                <Link
+                                    key={user.id}
+                                    to={`/profile/${user.id}`}
+                                    className="flex items-center justify-between gap-3 bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 rounded-2xl p-3 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3 min-w-0">
+
+                                        <div className="w-14 h-14 rounded-full overflow-hidden border border-white/10 bg-slate-800 shrink-0">
+                                            <img
+                                                src={
+                                                    user.avatar ||
+                                                    `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`
+                                                }
+                                                alt={user.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+
+                                        <div className="min-w-0">
+                                            <h3 className="text-[14px] font-semibold text-slate-200 truncate">
+                                                {user.name}
+                                            </h3>
+
+                                            <p className="text-[12px] text-slate-400 truncate">
+                                                @{user.username}
+                                            </p>
+
+                                            <p className="text-[11px] text-slate-500 mt-1 truncate">
+                                                {user.followers_count || 0} followers
+                                            </p>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+
+                        </div>
+                    </section>
+
+                    <section className="glass-panel p-4 rounded-2xl border border-white/10 bg-[#161d30]/40 backdrop-blur-md">
+
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-[18px] font-semibold text-white">
+                                Trending Threads
+                            </h2>
+
+                            <span className="text-[12px] text-slate-500">
+                                Paling banyak dibicarakan
+                            </span>
+                        </div>
+
+                        <div className="flex flex-col divide-y divide-white/5 border border-white/5 rounded-2xl overflow-hidden">
+
+                            {trendingThreads.map((post) => (
+                                <div key={post.id} className="p-1">
+                                    <PostCard post={post} />
+                                </div>
+                            ))}
+
+                        </div>
+                    </section>
+                </>
+            )}
         </div>
     )
 }

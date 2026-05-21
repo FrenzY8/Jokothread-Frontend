@@ -213,7 +213,7 @@ function ThreadDetail() {
             </div>
 
             <div className="p-4 border-b border-white/10">
-                <PostCard post={post} FromDetailThread={true} />
+                <PostCard post={post} setPosts={() => { }} />
             </div>
 
             <div className="p-4 border-b border-white/5 flex gap-3">

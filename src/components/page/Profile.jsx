@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import CreatePostCard from "./elements/CreatePostCard";
-import PostCard from "./elements/PostCard";
-import { Skeleton } from "./ui/skeleton";
+import CreatePostCard from "../elements/CreatePostCard";
+import PostCard from "../elements/PostCard";
+import { Skeleton } from "../ui/skeleton";
 import { Link } from 'react-router-dom';
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import { useAuthStore } from '../store/useAuthStore';
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { useAuthStore } from '../../store/useAuthStore';
 import { toast } from "sonner";
 
 function Profile() {
@@ -211,37 +211,39 @@ function Profile() {
                         />
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        {isOwnProfile ? (
-                            <Link
-                                to="/settings"
-                                className="px-4 py-1.5 border border-white/10 hover:bg-white/5 text-slate-200 text-[13px] font-semibold rounded-full transition-colors cursor-pointer"
-                            >
-                                Edit Profile
-                            </Link>
-                        ) : (
-                            <>
-                                <button className="p-2 border border-white/10 hover:bg-white/5 text-blue-400 rounded-full transition-colors cursor-pointer flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-[18px]">chat</span>
-                                </button>
-                                <button
-                                    onClick={handleFollow}
-                                    disabled={followLoading}
-                                    className={`px-5 py-1.5 text-white text-[13px] font-semibold rounded-full transition-colors cursor-pointer
-                                ${isFollowing
-                                            ? 'bg-slate-700 hover:bg-slate-600'
-                                            : 'bg-blue-500 hover:bg-blue-600'
-                                        }`}
+                    {currentUser?.id && (
+                        <div className="flex items-center gap-2">
+                            {isOwnProfile ? (
+                                <Link
+                                    to="/settings"
+                                    className="px-4 py-1.5 border border-white/10 hover:bg-white/5 text-slate-200 text-[13px] font-semibold rounded-full transition-colors cursor-pointer"
                                 >
-                                    {followLoading
-                                        ? 'Loading...'
-                                        : isFollowing
-                                            ? 'Following'
-                                            : 'Follow'}
-                                </button>
-                            </>
-                        )}
-                    </div>
+                                    Edit Profile
+                                </Link>
+                            ) : (
+                                <>
+                                    <button className="p-2 border border-white/10 hover:bg-white/5 text-blue-400 rounded-full transition-colors cursor-pointer flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-[18px]">chat</span>
+                                    </button>
+                                    <button
+                                        onClick={handleFollow}
+                                        disabled={followLoading}
+                                        className={`px-5 py-1.5 text-white text-[13px] font-semibold rounded-full transition-colors cursor-pointer
+                                ${isFollowing
+                                                ? 'bg-slate-700 hover:bg-slate-600'
+                                                : 'bg-blue-500 hover:bg-blue-600'
+                                            }`}
+                                    >
+                                        {followLoading
+                                            ? 'Loading...'
+                                            : isFollowing
+                                                ? 'Following'
+                                                : 'Follow'}
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    )}
                 </div>
                 <div className="flex flex-col">
                     <h1 className="text-xl font-bold text-slate-100">{profileData?.name || 'User Name'}</h1>
