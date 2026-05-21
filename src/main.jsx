@@ -1,5 +1,6 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { BrowserRouter } from 'react-router-dom'
 import { Toaster } from "@/components/ui/sonner";
 import App from './App.jsx'
@@ -22,8 +23,10 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        <Toaster position="bottom-right" />
-        <App />
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <Toaster position="bottom-right" />
+          <App />
+        </GoogleOAuthProvider>
       </QueryClientProvider>
     </BrowserRouter>
   </React.StrictMode>,
