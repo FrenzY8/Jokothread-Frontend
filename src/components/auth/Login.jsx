@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from "sonner";
+import { GoogleLogin } from '@react-oauth/google';
 
 function Login() {
     const [formData, setFormData] = useState({
@@ -10,6 +12,7 @@ function Login() {
 
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState('');
 
     const navigate = useNavigate();
@@ -54,12 +57,58 @@ function Login() {
                 result.token
             );
 
+            toast.success('Berhasil login');
             navigate('/');
 
         } catch (err) {
             setError(err.message);
+            toast.error(err.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleGoogleLogin = async (credentialResponse) => {
+        try {
+            setGoogleLoading(true);
+
+            const response = await fetch(
+                `${import.meta.env.VITE_BACKEND}/users/google`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        credential: credentialResponse.credential
+                    })
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || 'Google login gagal'
+                );
+            }
+
+            loginSuccess(
+                result.user,
+                result.token
+            );
+
+            toast.success(
+                `Welcome Back, ${result.user.name}`
+            );
+
+            navigate('/');
+
+        } catch (err) {
+            console.error(err);
+            toast.error(err.message);
+        } finally {
+            setGoogleLoading(false);
         }
     };
 
@@ -95,6 +144,41 @@ function Login() {
                         {error}
                     </div>
                 )}
+
+                <div className="mb-5">
+                    <div className="w-full flex justify-center">
+                        <div className="scale-[1.02]">
+                            <GoogleLogin
+                                onSuccess={handleGoogleLogin}
+                                onError={() => {
+                                    toast.error('Google login gagal');
+                                }}
+                                theme="filled_black"
+                                shape="pill"
+                                text="continue_with"
+                                width="370"
+                            />
+                        </div>
+                    </div>
+
+                    {googleLoading && (
+                        <div className="text-center text-xs text-slate-400 mt-3">
+                            Memproses Google login...
+                        </div>
+                    )}
+                </div>
+
+                <div className="relative my-6">
+                    <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-white/10" />
+                    </div>
+
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-[#161d30] px-3 text-slate-500">
+                            atau lanjut dengan email
+                        </span>
+                    </div>
+                </div>
 
                 <form
                     onSubmit={handleSubmit}
@@ -197,7 +281,7 @@ function Login() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="mt-2 w-full bg-white hover:bg-slate-200 disabled:bg-slate-500 disabled:cursor-not-allowed text-black font-semibold text-sm py-3.5 rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all duration-300 flex items-center justify-center gap-2"
+                        className="mt-2 w-full bg-white hover:bg-slate-200 disabled:bg-slate-500 disabled:cursor-not-allowed text-black font-semibold text-sm py-3.5 rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.1)] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
                     >
                         {loading
                             ? 'Memproses...'

@@ -28,6 +28,7 @@ function Profile() {
 
     const [isFollowing, setIsFollowing] = useState(false);
     const [followLoading, setFollowLoading] = useState(false);
+    const [isRequested, setIsRequested] = useState(false);
 
     const loadMoreRef = useRef(null);
 
@@ -35,11 +36,24 @@ function Profile() {
         const fetchProfileData = async () => {
             if (!targetUserId) return;
 
+            if (!isOwnProfile && profileData?.is_private && !isFollowing) {
+                setPosts([]);
+                setIsLoading(false);
+                return;
+            }
+
             try {
                 setIsProfileLoading(true);
 
                 const response = await fetch(
-                    `${import.meta.env.VITE_BACKEND}/users/${targetUserId}`
+                    `${import.meta.env.VITE_BACKEND}/users/${targetUserId}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${useAuthStore.getState().token}`
+                        }
+                    }
                 );
 
                 const result = await response.json();
@@ -52,6 +66,7 @@ function Profile() {
 
                 setProfileData(result.user);
                 setIsFollowing(result.is_following);
+                setIsRequested(result.is_requested);
 
             } catch (err) {
                 console.error("Gagal memuat profil:", err);
@@ -92,6 +107,7 @@ function Profile() {
             }));
 
             setIsFollowing(result.isFollowing);
+            setIsRequested(result.is_requested);
 
         } catch (err) {
             toast.error(err.message || 'Gagal mengikuti pengguna');
@@ -222,23 +238,24 @@ function Profile() {
                                 </Link>
                             ) : (
                                 <>
-                                    <button className="p-2 border border-white/10 hover:bg-white/5 text-blue-400 rounded-full transition-colors cursor-pointer flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-[18px]">chat</span>
-                                    </button>
                                     <button
                                         onClick={handleFollow}
                                         disabled={followLoading}
                                         className={`px-5 py-1.5 text-white text-[13px] font-semibold rounded-full transition-colors cursor-pointer
-                                ${isFollowing
+                                        ${isFollowing
                                                 ? 'bg-slate-700 hover:bg-slate-600'
-                                                : 'bg-blue-500 hover:bg-blue-600'
+                                                : isRequested
+                                                    ? 'bg-slate-800 text-slate-400 border border-white/10'
+                                                    : 'bg-blue-500 hover:bg-blue-600'
                                             }`}
                                     >
                                         {followLoading
                                             ? 'Loading...'
                                             : isFollowing
                                                 ? 'Following'
-                                                : 'Follow'}
+                                                : isRequested
+                                                    ? 'Requested'
+                                                    : 'Follow'}
                                     </button>
                                 </>
                             )}
@@ -276,76 +293,91 @@ function Profile() {
                     Threads
                 </div>
             </div>
-            {isLoading && (
-                <div className="space-y-4 w-full">
-                    {[1, 2, 3].map((i) => (
-                        <div key={i} className="bg-[#182136]/50 border border-white/10 rounded-2xl p-4 space-y-3">
-                            <div className="flex items-center space-x-3">
-                                <Skeleton className="h-9 w-9 rounded-full bg-slate-700/50" />
-                                <div className="space-y-1.5 flex-1">
-                                    <Skeleton className="h-4 w-1/4 bg-slate-700/50" />
-                                    <Skeleton className="h-3 w-1/6 bg-slate-700/50" />
-                                </div>
-                            </div>
-                            <div className="space-y-2 pt-2">
-                                <Skeleton className="h-4 w-full bg-slate-700/50" />
-                                <Skeleton className="h-4 w-4/5 bg-slate-700/50" />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-            {error && (
-                <Alert
-                    variant="destructive"
-                    className="my-4 flex items-start gap-3 rounded-2xl border border-rose-500/30 bg-rose-950/20 p-4 text-rose-400"
-                >
-                    <span className="material-symbols-outlined mt-0.5 text-[20px]">
-                        error
+
+            {!isOwnProfile && profileData?.is_private && !isFollowing ? (
+                <div className="w-full bg-[#182136]/30 border border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center gap-2 mt-2">
+                    <span className="material-symbols-outlined text-[40px] text-slate-500">
+                        lock
                     </span>
-
-                    <div className="flex-1">
-                        <AlertTitle className="font-semibold leading-none">
-                            Gagal Memuat Data
-                        </AlertTitle>
-
-                        <AlertDescription className="mt-1 text-sm leading-relaxed text-rose-400/80">
-                            {error.message}
-                        </AlertDescription>
-                    </div>
-                </Alert>
-            )}
-            {!isLoading && posts.length === 0 && (
-                <p className="text-slate-500 text-sm text-center py-8">Belum ada postingan dari user ini.</p>
-            )}
-            {posts.map((post) => (
-                <PostCard
-                    key={post.id}
-                    post={post}
-                    setPosts={setPosts}
-                />
-            ))}
-            {hasNextPage && !isLoading && !isFetchingNextPage && (
-                <div ref={loadMoreRef} className="h-2 w-full bg-transparent" />
-            )}
-            {isFetchingNextPage && (
-                <div className="space-y-4 w-full mt-3">
-                    {[1, 2].map((i) => (
-                        <div key={i} className="bg-[#182136]/50 border border-white/10 rounded-2xl p-4 space-y-3 animate-pulse">
-                            <div className="flex items-center space-x-3">
-                                <Skeleton className="h-9 w-9 rounded-full bg-slate-700/50" />
-                                <div className="space-y-1.5 flex-1">
-                                    <Skeleton className="h-4 w-1/4 bg-slate-700/50" />
-                                    <Skeleton className="h-3 w-1/6 bg-slate-700/50" />
-                                </div>
-                            </div>
-                            <div className="space-y-2 pt-2">
-                                <Skeleton className="h-4 w-full bg-slate-700/50" />
-                                <Skeleton className="h-4 w-4/5 bg-slate-700/50" />
-                            </div>
-                        </div>
-                    ))}
+                    <h3 className="text-base font-bold text-slate-200 mt-2">Akun ini Privat</h3>
+                    <p className="text-xs text-slate-400 text-center max-w-[320px]">
+                        Ikuti akun ini untuk melihat kiriman threads dan interaksi mereka.
+                    </p>
                 </div>
+            ) : (
+                <>
+                    {isLoading && (
+                        <div className="space-y-4 w-full">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="bg-[#182136]/50 border border-white/10 rounded-2xl p-4 space-y-3">
+                                    <div className="flex items-center space-x-3">
+                                        <Skeleton className="h-9 w-9 rounded-full bg-slate-700/50" />
+                                        <div className="space-y-1.5 flex-1">
+                                            <Skeleton className="h-4 w-1/4 bg-slate-700/50" />
+                                            <Skeleton className="h-3 w-1/6 bg-slate-700/50" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2 pt-2">
+                                        <Skeleton className="h-4 w-full bg-slate-700/50" />
+                                        <Skeleton className="h-4 w-4/5 bg-slate-700/50" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    {error && (
+                        <Alert
+                            variant="destructive"
+                            className="my-4 flex items-start gap-3 rounded-2xl border border-rose-500/30 bg-rose-950/20 p-4 text-rose-400"
+                        >
+                            <span className="material-symbols-outlined mt-0.5 text-[20px]">
+                                error
+                            </span>
+
+                            <div className="flex-1">
+                                <AlertTitle className="font-semibold leading-none">
+                                    Gagal Memuat Data
+                                </AlertTitle>
+
+                                <AlertDescription className="mt-1 text-sm leading-relaxed text-rose-400/80">
+                                    {error.message}
+                                </AlertDescription>
+                            </div>
+                        </Alert>
+                    )}
+                    {!isLoading && posts.length === 0 && (
+                        <p className="text-slate-500 text-sm text-center py-8">Belum ada postingan dari user ini.</p>
+                    )}
+                    {posts.map((post) => (
+                        <PostCard
+                            key={post.id}
+                            post={post}
+                            setPosts={setPosts}
+                        />
+                    ))}
+                    {hasNextPage && !isLoading && !isFetchingNextPage && (
+                        <div ref={loadMoreRef} className="h-2 w-full bg-transparent" />
+                    )}
+                    {isFetchingNextPage && (
+                        <div className="space-y-4 w-full mt-3">
+                            {[1, 2].map((i) => (
+                                <div key={i} className="bg-[#182136]/50 border border-white/10 rounded-2xl p-4 space-y-3 animate-pulse">
+                                    <div className="flex items-center space-x-3">
+                                        <Skeleton className="h-9 w-9 rounded-full bg-slate-700/50" />
+                                        <div className="space-y-1.5 flex-1">
+                                            <Skeleton className="h-4 w-1/4 bg-slate-700/50" />
+                                            <Skeleton className="h-3 w-1/6 bg-slate-700/50" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2 pt-2">
+                                        <Skeleton className="h-4 w-full bg-slate-700/50" />
+                                        <Skeleton className="h-4 w-4/5 bg-slate-700/50" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );

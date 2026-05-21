@@ -5,9 +5,11 @@ import { convertToBase64 } from '../utils/base64';
 import { toast } from "sonner"
 
 function Settings() {
-    const [isPrivate, setIsPrivate] = useState(false);
-    const navigate = useNavigate();
     const user = useAuthStore((state) => state.user);
+    const token = useAuthStore((state) => state.token);
+    const [isPrivate, setIsPrivate] = useState(user?.is_private || false)
+    const [savingPrivacy, setSavingPrivacy] = useState(false)
+    const navigate = useNavigate();
     const logout = useAuthStore((state) => state.logout);
     const updateUserState = useAuthStore((state) => state.updateUser);
     const [uploading, setUploading] = useState(false);
@@ -45,6 +47,49 @@ function Settings() {
             setUploading(false);
         }
     };
+
+    const handleTogglePrivacy = async () => {
+        const newValue = !isPrivate
+
+        setIsPrivate(newValue)
+        setSavingPrivacy(true)
+
+        try {
+            const response = await fetch(
+                `${import.meta.env.VITE_BACKEND}/users/privacy`,
+                {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        is_private: newValue
+                    })
+                }
+            )
+
+            const result = await response.json()
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || 'Gagal update privacy'
+                )
+            }
+
+            toast.success(
+                newValue
+                    ? 'Akun sekarang private'
+                    : 'Akun sekarang public'
+            )
+
+        } catch (err) {
+            setIsPrivate(!newValue)
+            toast.error(err.message)
+        } finally {
+            setSavingPrivacy(false)
+        }
+    }
 
     const handleLogout = () => {
         logout();
@@ -130,19 +175,49 @@ function Settings() {
                                     chevron_right
                                 </span>
                             </button>
-                            <button className="w-full flex items-center justify-between p-4 hover:bg-white/[0.04] transition-colors group">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5 text-primary group-hover:bg-primary/20 transition-colors">
-                                        <span className="material-symbols-outlined">shield_person</span>
+                            {user?.password === null ? (
+                                <div className="w-full flex items-center justify-between p-4 opacity-60 cursor-not-allowed">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5 text-slate-500">
+                                            <span className="material-symbols-outlined">
+                                                lock
+                                            </span>
+                                        </div>
+
+                                        <div className="flex flex-col items-start">
+                                            <span className="font-body-md text-body-md text-on-surface">
+                                                Password & Security
+                                            </span>
+
+                                            <span className="text-[11px] text-slate-500">
+                                                Login Google tidak memiliki password
+                                            </span>
+                                        </div>
                                     </div>
-                                    <span className="font-body-md text-body-md text-on-surface">
-                                        Password &amp; Security
+
+                                    <span className="material-symbols-outlined text-slate-600">
+                                        block
                                     </span>
                                 </div>
-                                <span className="material-symbols-outlined text-on-surface-variant">
-                                    chevron_right
-                                </span>
-                            </button>
+                            ) : (
+                                <button className="w-full flex items-center justify-between p-4 hover:bg-white/[0.04] transition-colors group">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5 text-primary group-hover:bg-primary/20 transition-colors">
+                                            <span className="material-symbols-outlined">
+                                                shield_person
+                                            </span>
+                                        </div>
+
+                                        <span className="font-body-md text-body-md text-on-surface">
+                                            Password &amp; Security
+                                        </span>
+                                    </div>
+
+                                    <span className="material-symbols-outlined text-on-surface-variant">
+                                        chevron_right
+                                    </span>
+                                </button>
+                            )}
                         </div>
                     </section>
 
@@ -162,8 +237,9 @@ function Settings() {
                                     </span>
                                 </div>
                                 <button
-                                    onClick={() => setIsPrivate(!isPrivate)}
-                                    className={`relative w-11 h-6 rounded-full border transition-all duration-300 flex items-center px-0.5 shadow-[inset_0_1px_4px_rgba(0,0,0,0.4)] ${isPrivate
+                                    disabled={savingPrivacy}
+                                    onClick={handleTogglePrivacy}
+                                    className={`relative w-11 h-6 rounded-full border transition-all duration-300 flex items-center px-0.5 shadow-[inset_0_1px_4px_rgba(0,0,0,0.4)] cursor-pointer disabled:opacity-50 ${isPrivate
                                         ? 'bg-primary/20 border-primary/50'
                                         : 'bg-white/10 border-white/10'
                                         }`}

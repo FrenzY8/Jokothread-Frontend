@@ -6,13 +6,14 @@ import { GuestRoute, PrivateRoute } from './utils/ProtectedRoute';
 
 import HomeFeed from './components/Home'
 import SearchExplore from './components/Explore'
-import Messages from './components/Messages'
+import Messages from './components/page/Messages'
 import Settings from './components/Settings'
 import Login from './components/auth/Login'
 import Register from './components/auth/Register'
 import ThreadDetail from './components/page/ThreadDetail';
 import Profile from './components/page/Profile';
 import SearchResults from './components/page/SearchResults';
+import Notifications from './components/page/Notifications';
 
 function App() {
   const [isSideBarOpen, setIsSideBarOpen] = useState(false)
@@ -98,7 +99,6 @@ function App() {
 
             <div className="flex flex-col gap-1.5">
               {navItems.map((tab, idx) => {
-                const location = useLocation();
                 const isActive = location.pathname === tab.path;
 
                 return (
@@ -186,6 +186,7 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route path="/messages" element={<Messages />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/notifications" element={<Notifications />} />
           </Route>
 
           <Route element={<GuestRoute />}>
