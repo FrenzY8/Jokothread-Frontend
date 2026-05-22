@@ -294,8 +294,28 @@ function ThreadDetail() {
             <div className="divide-y divide-white/5">
 
                 {isRepliesLoading ? (
-                    <div className="p-4 text-center text-slate-500 text-sm">
-                        Loading replies...
+                    <div className="space-y-0 divide-y divide-white/5 w-full">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="p-4 pb-6 flex gap-3 animate-pulse">
+                                <Skeleton className="w-8 h-8 rounded-full bg-slate-700/40 shrink-0" />
+
+                                <div className="flex-1 flex flex-col gap-2 min-w-0">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-1.5 w-1/2">
+                                            <Skeleton className="h-4 w-1/3 bg-slate-700/40 rounded" />
+                                            <Skeleton className="h-3 w-1/4 bg-slate-700/30 rounded" />
+                                        </div>
+                                        <Skeleton className="h-3 w-10 bg-slate-700/30 rounded" />
+                                    </div>
+
+                                    {/* Content Text Skeleton */}
+                                    <div className="space-y-1.5 pt-1">
+                                        <Skeleton className="h-3.5 w-full bg-slate-700/40 rounded" />
+                                        <Skeleton className="h-3.5 w-4/5 bg-slate-700/40 rounded" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ) : replies.length === 0 ? (
                     <div className="p-8 text-center text-slate-500 text-sm">
@@ -307,7 +327,6 @@ function ThreadDetail() {
                             key={comment.id}
                             className="p-4 pb-6 flex gap-3 hover:bg-white/[0.01] transition-colors"
                         >
-
                             <div className="w-8 h-8 shrink-0 rounded-full overflow-hidden border border-white/10 bg-slate-800">
                                 <img
                                     alt={comment.users?.name}
@@ -322,22 +341,19 @@ function ThreadDetail() {
                             <div className="flex-1 flex flex-col min-w-0">
                                 <div className="flex justify-between items-center mb-0.5">
                                     <div className="flex items-baseline gap-1.5 min-w-0">
-
                                         <span className="text-[13px] text-slate-200 font-semibold truncate">
                                             {comment.name || 'Unknown'}
                                         </span>
-
                                         <span className="text-[11px] text-slate-400 truncate">
                                             @{comment.username || 'unknown'}
                                         </span>
                                     </div>
-
                                     <span className="text-[10px] text-slate-500 whitespace-nowrap">
                                         {formatTime(comment.created_at)}
                                     </span>
                                 </div>
 
-                                <p className="text-[13.5px] text-slate-300 leading-relaxed whitespace-pre-line">
+                                <p className="text-[13px.5] text-slate-300 leading-relaxed whitespace-pre-line">
                                     {comment.content}
                                 </p>
 

@@ -13,6 +13,7 @@ import Register from './components/auth/Register'
 import ThreadDetail from './components/page/ThreadDetail';
 import Profile from './components/page/Profile';
 import SearchResults from './components/page/SearchResults';
+import About from './components/page/About';
 import Notifications from './components/page/Notifications';
 
 function App() {
@@ -77,6 +78,7 @@ function App() {
           <div className="text-xl font-bold tracking-tight">Jokothread</div>
           <div className="flex items-center gap-1">
             <span onClick={() => navigate('/explore')} className="material-symbols-outlined text-[22px]">search</span>
+            <span onClick={() => navigate('/about')} className="material-symbols-outlined text-[22px]">info</span>
           </div>
         </header>
       )}
@@ -126,9 +128,9 @@ function App() {
           </div>
 
           <div className="flex flex-col gap-1">
-            <Link className={`flex items-center gap-4 text-slate-400 hover:text-slate-200 px-3 py-2 rounded-xl hover:bg-slate-900/40 transition-colors ${!isSideBarOpen && 'justify-center'}`} to="/support" title="Support">
-              <span className="material-symbols-outlined text-[22px]">help</span>
-              {isSideBarOpen && <span className="text-[14px]">Support</span>}
+            <Link className={`flex items-center gap-4 text-slate-400 hover:text-slate-200 px-3 py-2 rounded-xl hover:bg-slate-900/40 transition-colors ${!isSideBarOpen && 'justify-center'}`} to="/about" title="About">
+              <span className="material-symbols-outlined text-[22px]">info</span>
+              {isSideBarOpen && <span className="text-[14px]">About</span>}
             </Link>
 
             {user?.id && (
@@ -179,6 +181,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomeFeed />} />
           <Route path="/explore" element={<SearchExplore />} />
+          <Route path="/about" element={<About />} />
           <Route path="/thread/:id" element={<ThreadDetail />} />
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/search/:query" element={<SearchResults />} />

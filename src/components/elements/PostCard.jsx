@@ -138,6 +138,8 @@ function PostCard({ post, setPosts, FromDetailThread = false }) {
                 queryKey: ['posts']
             });
 
+            navigate('/');
+
         } catch (err) {
             toast.error(err.message);
         }
@@ -303,7 +305,7 @@ function PostCard({ post, setPosts, FromDetailThread = false }) {
                                             className="absolute top-9 right-0 min-w-[170px] overflow-hidden rounded-2xl border border-white/10 bg-[#182136]/95 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.45)] z-50 animate-in fade-in zoom-in-95 duration-100"
                                         >
                                             <button
-                                                onClick={FromDetailThread ? undefined : undefined}
+                                                onClick={handleDeletePost}
                                                 className="w-full px-4 py-3 flex items-center gap-3 text-[13px] text-rose-400 hover:bg-white/5 transition-colors cursor-pointer"
                                             >
                                                 <span className="material-symbols-outlined text-[18px]">
@@ -437,18 +439,6 @@ function PostCard({ post, setPosts, FromDetailThread = false }) {
                         >
                             <span className="material-symbols-outlined text-[18px]">chat_bubble</span>
                             <span>{realRepliesCount}</span>
-                        </button>
-                    )}
-
-                    {FromDetailThread ? (
-                        <div className="flex items-center gap-1.5 text-slate-500">
-                            <span className="material-symbols-outlined text-[18px]">repeat</span>
-                            <span>0</span>
-                        </div>
-                    ) : (
-                        <button className="flex items-center gap-1.5 hover:text-emerald-400 transition-colors group cursor-pointer">
-                            <span className="material-symbols-outlined text-[18px]">repeat</span>
-                            <span>0</span>
                         </button>
                     )}
                 </div>

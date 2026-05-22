@@ -11,9 +11,9 @@ import { toast } from "sonner";
 function Profile() {
     const { id: profileId } = useParams();
     const currentUser = useAuthStore((state) => state.user);
+    const currentUserId = useAuthStore((state) => state.user.id);
 
-    const isOwnProfile =
-        !profileId || profileId === String(currentUser?.id);
+    const isOwnProfile = !profileId || profileId === String(currentUser?.id);
     const targetUserId = isOwnProfile ? currentUser?.id : profileId;
 
     const [profileData, setProfileData] = useState(null);
@@ -26,9 +26,7 @@ function Profile() {
     const [hasNextPage, setHasNextPage] = useState(true);
     const [error, setError] = useState(null);
 
-    const [isFollowing, setIsFollowing] = useState(false);
     const [followLoading, setFollowLoading] = useState(false);
-    const [isRequested, setIsRequested] = useState(false);
 
     const loadMoreRef = useRef(null);
 
@@ -36,15 +34,8 @@ function Profile() {
         const fetchProfileData = async () => {
             if (!targetUserId) return;
 
-            if (!isOwnProfile && profileData?.is_private && !isFollowing) {
-                setPosts([]);
-                setIsLoading(false);
-                return;
-            }
-
             try {
                 setIsProfileLoading(true);
-
                 const response = await fetch(
                     `${import.meta.env.VITE_BACKEND}/users/${targetUserId}`,
                     {
@@ -57,16 +48,15 @@ function Profile() {
                 );
 
                 const result = await response.json();
-
+                
                 if (!response.ok) {
-                    throw new Error(
-                        result.message || 'Gagal memuat profil'
-                    );
+                    throw new Error(result.message || 'Gagal memuat profil');
                 }
 
-                setProfileData(result.user);
-                setIsFollowing(result.is_following);
-                setIsRequested(result.is_requested);
+                setProfileData({
+                    ...result.user,
+                    is_following: result.user.is_following
+                });
 
             } catch (err) {
                 console.error("Gagal memuat profil:", err);
@@ -76,12 +66,11 @@ function Profile() {
         };
 
         fetchProfileData();
-    }, [targetUserId, currentUser]);
+    }, [targetUserId, currentUser?.id]);
 
     const handleFollow = async () => {
         try {
             setFollowLoading(true);
-
             const response = await fetch(
                 `${import.meta.env.VITE_BACKEND}/users/${targetUserId}/follow`,
                 {
@@ -94,20 +83,23 @@ function Profile() {
             );
 
             const result = await response.json();
+            
 
             if (!response.ok) {
                 throw new Error(result.message);
             }
 
+            const nextFollowing = result.isFollowing ?? result.is_following ?? false;
+            const nextRequested = result.is_requested ?? result.isRequested ?? false;
+
             setProfileData(prev => ({
                 ...prev,
-                followers_count: result.isFollowing
+                followers_count: nextFollowing
                     ? prev.followers_count + 1
-                    : Math.max(prev.followers_count - 1, 0)
+                    : Math.max(prev.followers_count - 1, 0),
+                is_following: nextFollowing,
+                is_requested: nextRequested
             }));
-
-            setIsFollowing(result.isFollowing);
-            setIsRequested(result.is_requested);
 
         } catch (err) {
             toast.error(err.message || 'Gagal mengikuti pengguna');
@@ -118,6 +110,13 @@ function Profile() {
 
     const fetchPosts = async (currentOffset, isRefresh = false) => {
         if (!targetUserId) return;
+
+        if (!isOwnProfile && profileData?.is_private && !profileData?.is_following) {
+            setPosts([]);
+            setIsLoading(false);
+            return;
+        }
+
         try {
             if (isRefresh) setIsLoading(true);
             else if (currentOffset > 0) setIsFetchingNextPage(true);
@@ -126,9 +125,7 @@ function Profile() {
                 `${import.meta.env.VITE_BACKEND}/posts?user_id=${targetUserId}&offset=${currentOffset}&limit=10`,
                 {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Content-Type': 'application/json' }
                 }
             );
 
@@ -149,10 +146,7 @@ function Profile() {
             } else {
                 setPosts(prev => {
                     const allPosts = [...prev, ...formattedData];
-                    const uniquePosts = Array.from(
-                        new Map(allPosts.map(post => [post.id, post])).values()
-                    );
-                    return uniquePosts;
+                    return Array.from(new Map(allPosts.map(p => [p.id, p])).values());
                 });
             }
 
@@ -168,9 +162,11 @@ function Profile() {
     };
 
     useEffect(() => {
-        setPageParam(0);
-        fetchPosts(0, true);
-    }, [targetUserId]);
+        if (!isProfileLoading && profileData) {
+            setPageParam(0);
+            fetchPosts(0, true);
+        }
+    }, [targetUserId, isProfileLoading]); 
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -218,7 +214,6 @@ function Profile() {
         <div className="w-full max-w-[580px] mx-auto px-4 pt-4 pb-24 flex flex-col gap-3">
             <div className="w-full bg-[#182136]/50 border border-white/10 rounded-2xl p-5 flex flex-col gap-4">
                 <div className="flex justify-between items-start w-full">
-                    {/* Avatar Profil */}
                     <div className="w-20 h-20 rounded-full overflow-hidden border border-white/10 bg-slate-800">
                         <img
                             src={profileData?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${profileData?.username}`}
@@ -237,27 +232,25 @@ function Profile() {
                                     Edit Profile
                                 </Link>
                             ) : (
-                                <>
-                                    <button
-                                        onClick={handleFollow}
-                                        disabled={followLoading}
-                                        className={`px-5 py-1.5 text-white text-[13px] font-semibold rounded-full transition-colors cursor-pointer
-                                        ${isFollowing
-                                                ? 'bg-slate-700 hover:bg-slate-600'
-                                                : isRequested
-                                                    ? 'bg-slate-800 text-slate-400 border border-white/10'
-                                                    : 'bg-blue-500 hover:bg-blue-600'
-                                            }`}
-                                    >
-                                        {followLoading
-                                            ? 'Loading...'
-                                            : isFollowing
-                                                ? 'Following'
-                                                : isRequested
-                                                    ? 'Requested'
-                                                    : 'Follow'}
-                                    </button>
-                                </>
+                                <button
+                                    onClick={handleFollow}
+                                    disabled={followLoading}
+                                    className={`px-5 py-1.5 text-white text-[13px] font-semibold rounded-full transition-colors cursor-pointer
+                                    ${profileData.is_following
+                                            ? 'bg-slate-700 hover:bg-slate-600'
+                                            : profileData.is_requested
+                                                ? 'bg-slate-800 text-slate-400 border border-white/10'
+                                                : 'bg-blue-500 hover:bg-blue-600'
+                                        }`}
+                                >
+                                    {followLoading
+                                        ? 'Loading...'
+                                        : profileData.is_following
+                                            ? 'Unfollow'
+                                            : profileData.is_requested
+                                                ? 'Requested'
+                                                : 'Follow'}
+                                </button>
                             )}
                         </div>
                     )}
@@ -280,6 +273,7 @@ function Profile() {
                     </div>
                 </div>
             </div>
+
             {isOwnProfile && (
                 <>
                     <CreatePostCard onPostCreated={handlePostCreated} />
@@ -288,13 +282,14 @@ function Profile() {
                     </div>
                 </>
             )}
+
             <div className="w-full border-b border-white/10 flex justify-start mt-2">
                 <div className="px-4 py-2 border-b-2 border-blue-500 text-blue-400 text-sm font-semibold">
                     Threads
                 </div>
             </div>
 
-            {!isOwnProfile && profileData?.is_private && !isFollowing ? (
+            {!isOwnProfile && profileData?.is_private && !profileData?.is_following ? (
                 <div className="w-full bg-[#182136]/30 border border-white/10 rounded-2xl p-8 flex flex-col items-center justify-center gap-2 mt-2">
                     <span className="material-symbols-outlined text-[40px] text-slate-500">
                         lock
@@ -330,15 +325,9 @@ function Profile() {
                             variant="destructive"
                             className="my-4 flex items-start gap-3 rounded-2xl border border-rose-500/30 bg-rose-950/20 p-4 text-rose-400"
                         >
-                            <span className="material-symbols-outlined mt-0.5 text-[20px]">
-                                error
-                            </span>
-
+                            <span className="material-symbols-outlined mt-0.5 text-[20px]">error</span>
                             <div className="flex-1">
-                                <AlertTitle className="font-semibold leading-none">
-                                    Gagal Memuat Data
-                                </AlertTitle>
-
+                                <AlertTitle className="font-semibold leading-none">Gagal Memuat Data</AlertTitle>
                                 <AlertDescription className="mt-1 text-sm leading-relaxed text-rose-400/80">
                                     {error.message}
                                 </AlertDescription>
@@ -349,11 +338,7 @@ function Profile() {
                         <p className="text-slate-500 text-sm text-center py-8">Belum ada postingan dari user ini.</p>
                     )}
                     {posts.map((post) => (
-                        <PostCard
-                            key={post.id}
-                            post={post}
-                            setPosts={setPosts}
-                        />
+                        <PostCard key={post.id} post={post} setPosts={setPosts} />
                     ))}
                     {hasNextPage && !isLoading && !isFetchingNextPage && (
                         <div ref={loadMoreRef} className="h-2 w-full bg-transparent" />

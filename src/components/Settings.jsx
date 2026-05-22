@@ -49,10 +49,10 @@ function Settings() {
     };
 
     const handleTogglePrivacy = async () => {
-        const newValue = !isPrivate
+        const newValue = !isPrivate;
 
-        setIsPrivate(newValue)
-        setSavingPrivacy(true)
+        setIsPrivate(newValue);
+        setSavingPrivacy(true);
 
         try {
             const response = await fetch(
@@ -66,30 +66,26 @@ function Settings() {
                     body: JSON.stringify({
                         is_private: newValue
                     })
-                }
-            )
+            }
+            );
 
-            const result = await response.json()
+            const result = await response.json();
 
             if (!response.ok) {
-                throw new Error(
-                    result.message || 'Gagal update privacy'
-                )
+                throw new Error(result.message || 'Gagal update privacy');
             }
 
-            toast.success(
-                newValue
-                    ? 'Akun sekarang private'
-                    : 'Akun sekarang public'
-            )
+            updateUserState(result.user);
+
+            toast.success(newValue ? 'Akun sekarang private' : 'Akun sekarang public');
 
         } catch (err) {
-            setIsPrivate(!newValue)
-            toast.error(err.message)
+            setIsPrivate(!newValue);
+            toast.error(err.message);
         } finally {
-            setSavingPrivacy(false)
+            setSavingPrivacy(false);
         }
-    }
+    };
 
     const handleLogout = () => {
         logout();

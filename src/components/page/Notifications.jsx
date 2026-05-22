@@ -9,6 +9,7 @@ function Notifications() {
     const [notifications, setNotifications] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [actionLoadingId, setActionLoadingId] = useState(null); // loader khusus tombol request
 
     const fetchNotifications = async () => {
         try {
@@ -44,15 +45,45 @@ function Notifications() {
 
             const response = await fetch(`${import.meta.env.VITE_BACKEND}/notifications/${id}/read`, {
                 method: 'PATCH',
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
+                headers: { Authorization: `Bearer ${token}` }
             });
 
             if (!response.ok) throw new Error('Gagal memperbarui status');
         } catch (err) {
             toast.error(err.message);
             fetchNotifications();
+        }
+    };
+
+    // Fungsi Aksi Terima atau Tolak Request
+    const handleFollowAction = async (e, notifId, senderId, action) => {
+        e.stopPropagation(); // Mencegah terpicunya klik card (handleMarkAsRead)
+        
+        try {
+            setActionLoadingId(notifId);
+
+            // Sesuaikan endpoint ini dengan backend follow-request / respon milikmu
+            const response = await fetch(`${import.meta.env.VITE_BACKEND}/users/requests/${senderId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ action }) // 'ACCEPT' atau 'REJECT'
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Gagal merespon permintaan');
+
+            toast.success(action === 'ACCEPT' ? 'Permintaan diterima' : 'Permintaan ditolak');
+            
+            // Hapus atau perbarui status notifikasi dari list setelah ditindaklanjuti
+            setNotifications(prev => prev.filter(n => n.id !== notifId));
+
+        } catch (err) {
+            toast.error(err.message);
+        } finally {
+            setActionLoadingId(null);
         }
     };
 
@@ -97,32 +128,54 @@ function Notifications() {
                 <div
                     key={notif.id}
                     onClick={() => !notif.is_read && handleMarkAsRead(notif.id)}
-                    className={`border rounded-2xl p-4 flex items-start gap-4 transition-all duration-200 cursor-pointer
+                    className={`border rounded-2xl p-4 flex flex-col gap-3 transition-all duration-200 cursor-pointer
                         ${notif.is_read 
                             ? 'bg-[#182136]/30 border-white/5 opacity-70' 
                             : 'bg-[#182136]/80 border-blue-500/30 hover:border-blue-500/50 shadow-md shadow-blue-500/5'
                         }`}
                 >
-                    <div className={`p-2 rounded-xl flex items-center justify-center 
-                        ${notif.is_read ? 'bg-slate-800/50 text-slate-400' : 'bg-blue-500/10 text-blue-400'}`}>
-                        <span className="material-symbols-outlined text-[20px]">
-                            {notif.icon || 'notifications'}
-                        </span>
+                    <div className="flex items-start gap-4 w-full">
+                        <div className={`p-2 rounded-xl flex items-center justify-center shrink-0
+                            ${notif.is_read ? 'bg-slate-800/50 text-slate-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                            <span className="material-symbols-outlined text-[20px]">
+                                {notif.type === 'follow_request' ? 'person_add' : (notif.icon || 'notifications')}
+                            </span>
+                        </div>
+
+                        <div className="flex-1 space-y-0.5">
+                            <div className="flex justify-between items-start gap-2">
+                                <h3 className={`text-sm font-semibold ${notif.is_read ? 'text-slate-400' : 'text-slate-200'}`}>
+                                    {notif.title}
+                                </h3>
+                                {!notif.is_read && (
+                                    <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse mt-1 shrink-0" />
+                                )}
+                            </div>
+                            <p className={`text-[13px] leading-relaxed ${notif.is_read ? 'text-slate-500' : 'text-slate-300'}`}>
+                                {notif.message}
+                            </p>
+                        </div>
                     </div>
 
-                    <div className="flex-1 space-y-0.5">
-                        <div className="flex justify-between items-start gap-2">
-                            <h3 className={`text-sm font-semibold ${notif.is_read ? 'text-slate-400' : 'text-slate-200'}`}>
-                                {notif.title}
-                            </h3>
-                            {!notif.is_read && (
-                                <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse mt-1" />
-                            )}
+                    {/* RENDER TOMBOL AKSI JIKA TYPE-NYA FOLLOW REQUEST */}
+                    {notif.type === 'follow_request' && (
+                        <div className="flex items-center gap-2 pl-14 mt-1">
+                            <button
+                                onClick={(e) => handleFollowAction(e, notif.id, notif.sender_id, 'ACCEPT')}
+                                disabled={actionLoadingId === notif.id}
+                                className="px-4 py-1 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-500/50 text-white text-xs font-semibold rounded-full transition-colors cursor-pointer"
+                            >
+                                {actionLoadingId === notif.id ? '...' : 'Terima'}
+                            </button>
+                            <button
+                                onClick={(e) => handleFollowAction(e, notif.id, notif.sender_id, 'REJECT')}
+                                disabled={actionLoadingId === notif.id}
+                                className="px-4 py-1 bg-slate-800 hover:bg-slate-700 border border-white/10 disabled:opacity-50 text-slate-300 text-xs font-semibold rounded-full transition-colors cursor-pointer"
+                            >
+                                Tolak
+                            </button>
                         </div>
-                        <p className={`text-[13px] leading-relaxed ${notif.is_read ? 'text-slate-500' : 'text-slate-300'}`}>
-                            {notif.message}
-                        </p>
-                    </div>
+                    )}
                 </div>
             ))}
         </div>
