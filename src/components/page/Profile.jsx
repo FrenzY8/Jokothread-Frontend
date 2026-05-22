@@ -11,6 +11,7 @@ import { toast } from "sonner";
 function Profile() {
     const { id: profileId } = useParams();
     const currentUser = useAuthStore((state) => state.user);
+    const navigate = useNavigate();
 
     const isOwnProfile = !profileId || profileId === String(currentUser?.id);
     const targetUserId = isOwnProfile ? currentUser?.id : profileId;
@@ -47,14 +48,15 @@ function Profile() {
                 );
 
                 const result = await response.json();
-                
+
                 if (!response.ok) {
                     throw new Error(result.message || 'Gagal memuat profil');
                 }
 
                 setProfileData({
                     ...result.user,
-                    is_following: result.user.is_following
+                    is_following: result.user.is_following,
+                    blocked_by: result.blocked_by
                 });
 
             } catch (err) {
@@ -82,7 +84,7 @@ function Profile() {
             );
 
             const result = await response.json();
-            
+
 
             if (!response.ok) {
                 throw new Error(result.message);
@@ -104,6 +106,36 @@ function Profile() {
             toast.error(err.message || 'Gagal mengikuti pengguna');
         } finally {
             setFollowLoading(false);
+        }
+    };
+
+    const handleChat = () => {
+        navigate(`/messages?userId=${targetUserId}`);
+    };
+
+    const handleBlock = async () => {
+        const actionText = profileData?.is_blocked ? "membuka blokir" : "memblokir";
+        if (!window.confirm(`Apakah Anda yakin ingin ${actionText} pengguna ini?`)) return;
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BACKEND}/users/${targetUserId}/block`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${useAuthStore.getState().token}`
+                }
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Gagal mengeksekusi aksi');
+
+            toast.success(result.message || 'Berhasil memperbarui status blokir');
+
+            setProfileData(prev => ({
+                ...prev,
+                is_blocked: result.isBlocked,
+                blocked_by: result.blocked_by
+            }));
+        } catch (err) {
+            toast.error(err.message);
         }
     };
 
@@ -165,7 +197,7 @@ function Profile() {
             setPageParam(0);
             fetchPosts(0, true);
         }
-    }, [targetUserId, isProfileLoading]); 
+    }, [targetUserId, isProfileLoading]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -209,6 +241,28 @@ function Profile() {
         );
     }
 
+    if (
+        !isOwnProfile &&
+        (
+            profileData?.is_blocked ||
+            profileData?.blocked_by
+        )
+    ) {
+        return (
+            <div className="w-full max-w-[580px] mx-auto px-4 pt-4 pb-24 flex flex-col gap-3">
+                <div className="w-full bg-[#182136]/30 border border-rose-500/10 rounded-2xl p-16 flex flex-col items-center justify-center gap-2 mt-2">
+                    <span className="material-symbols-outlined text-[56px] text-slate-500 animate-pulse">
+                        lock_person
+                    </span>
+                    <h3 className="text-lg font-bold text-slate-200 mt-2">Profil Tidak Tersedia</h3>
+                    <p className="text-xs text-slate-400 text-center max-w-[340px] leading-relaxed">
+                        Mekanisme pembatasan aktif. Anda telah memblokir akun ini atau akses komunikasi antar kedua belah pihak telah ditutup.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full max-w-[580px] mx-auto px-4 pt-4 pb-24 flex flex-col gap-3">
             <div className="w-full bg-[#182136]/50 border border-white/10 rounded-2xl p-5 flex flex-col gap-4">
@@ -231,25 +285,51 @@ function Profile() {
                                     Edit Profile
                                 </Link>
                             ) : (
-                                <button
-                                    onClick={handleFollow}
-                                    disabled={followLoading}
-                                    className={`px-5 py-1.5 text-white text-[13px] font-semibold rounded-full transition-colors cursor-pointer
-                                    ${profileData.is_following
-                                            ? 'bg-slate-700 hover:bg-slate-600'
-                                            : profileData.is_requested
-                                                ? 'bg-slate-800 text-slate-400 border border-white/10'
-                                                : 'bg-blue-500 hover:bg-blue-600'
-                                        }`}
-                                >
-                                    {followLoading
-                                        ? 'Loading...'
-                                        : profileData.is_following
-                                            ? 'Unfollow'
-                                            : profileData.is_requested
-                                                ? 'Requested'
-                                                : 'Follow'}
-                                </button>
+                                <>
+                                    {/* Tombol Chat */}
+                                    <button
+                                        onClick={handleChat}
+                                        className="p-1.5 border border-white/10 hover:bg-white/5 text-slate-300 hover:text-white rounded-full transition-colors cursor-pointer"
+                                        title="Kirim Pesan"
+                                    >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                        </svg>
+                                    </button>
+
+                                    {/* Tombol Follow */}
+                                    <button
+                                        onClick={handleFollow}
+                                        disabled={followLoading}
+                                        className={`px-5 py-1.5 text-white text-[13px] font-semibold rounded-full transition-colors cursor-pointer
+                                        ${profileData?.is_following
+                                                ? 'bg-slate-700 hover:bg-slate-600'
+                                                : profileData?.is_requested
+                                                    ? 'bg-slate-800 text-slate-400 border border-white/10'
+                                                    : 'bg-blue-500 hover:bg-blue-600'
+                                            }`}
+                                    >
+                                        {followLoading
+                                            ? 'Loading...'
+                                            : profileData?.is_following
+                                                ? 'Unfollow'
+                                                : profileData?.is_requested
+                                                    ? 'Requested'
+                                                    : 'Follow'}
+                                    </button>
+
+                                    {/* Tombol Block */}
+                                    <button
+                                        onClick={handleBlock}
+                                        className="p-1.5 border border-rose-500/20 hover:bg-rose-500/10 text-rose-400 rounded-full transition-colors cursor-pointer"
+                                        title="Blokir Pengguna"
+                                    >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                                        </svg>
+                                    </button>
+                                </>
                             )}
                         </div>
                     )}

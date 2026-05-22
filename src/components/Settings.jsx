@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { convertToBase64 } from '../utils/base64';
 import { toast } from "sonner"
@@ -256,7 +256,7 @@ function Settings() {
                                 </button>
                             </div>
 
-                            <button className="w-full flex items-center justify-between p-4 hover:bg-white/[0.04] transition-colors group">
+                            <Link to="/blocked" className="w-full flex items-center justify-between p-4 hover:bg-white/[0.04] transition-colors group">
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5 text-primary group-hover:bg-primary/20 transition-colors">
                                         <span className="material-symbols-outlined">block</span>
@@ -268,7 +268,7 @@ function Settings() {
                                 <span className="material-symbols-outlined text-on-surface-variant">
                                     chevron_right
                                 </span>
-                            </button>
+                            </Link>
                         </div>
                     </section>
 

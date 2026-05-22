@@ -17,6 +17,7 @@ import About from './components/page/About';
 import Notifications from './components/page/Notifications';
 import PersonalSettings from './components/page/PersonalSettings';
 import SecuritySettings from './components/page/SecuritySettings';
+import BlockedAccount from './components/page/BlockedAccount';
 
 function App() {
   const [isSideBarOpen, setIsSideBarOpen] = useState(false)
@@ -74,7 +75,7 @@ function App() {
           })}
         </nav>
       )}
-      
+
       {!isLoginPage && (
         <header className="md:hidden sticky top-0 w-full z-50 flex justify-between items-center px-4 py-3 bg-[#0f1422]/80 backdrop-blur-md border-b border-white/10 shadow-[0_1px_10px_rgba(255,255,255,0.03)]">
           <div className="text-xl font-bold tracking-tight">Jokothread</div>
@@ -186,14 +187,15 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/thread/:id" element={<ThreadDetail />} />
           <Route path="/profile/:id" element={<Profile />} />
-          <Route path="/personal-settings" element={<PersonalSettings />} />
-          <Route path="/security-settings" element={<SecuritySettings />} />
           <Route path="/search/:query" element={<SearchResults />} />
 
           <Route element={<PrivateRoute />}>
             <Route path="/messages" element={<Messages />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/notifications" element={<Notifications />} />
+            <Route path="/personal-settings" element={<PersonalSettings />} />
+            <Route path="/security-settings" element={<SecuritySettings />} />
+            <Route path="/blocked" element={<BlockedAccount />} />
           </Route>
 
           <Route element={<GuestRoute />}>

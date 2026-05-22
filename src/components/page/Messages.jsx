@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { Skeleton } from "../ui/skeleton";
 import { toast } from "sonner";
@@ -18,6 +19,46 @@ function Messages() {
   const [isSending, setIsSending] = useState(false);
 
   const chatEndRef = useRef(null);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        setIsContactsLoading(true);
+        const res = await fetch(`${import.meta.env.VITE_BACKEND}/messages/contacts`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.message);
+
+        setContacts(result.data);
+        const searchParams = new URLSearchParams(location.search);
+        const queryUserId = searchParams.get('userId');
+
+        if (queryUserId) {
+          const matchingContact = result.data.find(c => String(c.id) === String(queryUserId));
+          if (matchingContact) {
+            setActiveContact(matchingContact);
+          } else {
+            fetch(`${import.meta.env.VITE_BACKEND}/users/${queryUserId}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            })
+              .then(r => r.json())
+              .then(resUser => {
+                if (resUser.user) setActiveContact(resUser.user);
+              }).catch(console.error);
+          }
+        }
+
+      } catch (err) {
+        toast.error("Gagal memuat kontak");
+      } finally {
+        setIsContactsLoading(false);
+      }
+    };
+    if (token) fetchContacts();
+  }, [token, location.search]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -162,14 +203,17 @@ function Messages() {
                 <span className="material-symbols-outlined text-[20px]">arrow_back</span>
               </button>
 
-              <img src={
-                activeContact.avatar ||
-                `https://api.dicebear.com/7.x/bottts/svg?seed=${activeContact.name}`
-              } alt="avatar" className="w-9 h-9 rounded-full object-cover" />
-              <div className="truncate flex-1">
-                <h3 className="text-sm font-bold text-slate-200 truncate">{activeContact.name}</h3>
-                <p className="text-[11px] text-slate-400 truncate">@{activeContact.username}</p>
-              </div>
+              <Link to={`/profile/${activeContact.id}`} className="flex items-center gap-3 group cursor-pointer min-w-0 flex-1">
+                <img src={
+                  activeContact.avatar ||
+                  `https://api.dicebear.com/7.x/bottts/svg?seed=${activeContact.name}`
+                } alt="avatar" className="w-9 h-9 rounded-full object-cover group-hover:opacity-80 transition-opacity shrink-0" />
+
+                <div className="truncate">
+                  <h3 className="text-sm font-bold text-slate-200 truncate group-hover:text-blue-400 transition-colors">{activeContact.name}</h3>
+                  <p className="text-[11px] text-slate-400 truncate">@{activeContact.username}</p>
+                </div>
+              </Link>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3 flex flex-col">
