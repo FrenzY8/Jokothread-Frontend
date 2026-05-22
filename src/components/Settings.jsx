@@ -265,32 +265,6 @@ function Settings() {
                         </div>
                     </section>
 
-                    <section className="flex flex-col gap-2">
-                        <h2 className="font-display font-label-lg text-label-lg text-on-surface-variant pl-4">
-                            Notifications
-                        </h2>
-                        <div className="bg-[#161d30]/40 backdrop-blur-[20px] border border-white/10 rounded-2xl shadow-[0px_10px_40px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col">
-                            <button className="w-full flex items-center justify-between p-4 hover:bg-white/[0.04] transition-colors group">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/5 text-primary group-hover:bg-primary/20 transition-colors">
-                                        <span className="material-symbols-outlined">mail</span>
-                                    </div>
-                                    <div className="flex flex-col items-start">
-                                        <span className="font-body-md text-body-md text-on-surface">
-                                            Email Notifications
-                                        </span>
-                                        <span className="font-body-md text-label-sm text-on-surface-variant text-sm">
-                                            Weekly Digest
-                                        </span>
-                                    </div>
-                                </div>
-                                <span className="material-symbols-outlined text-on-surface-variant">
-                                    chevron_right
-                                </span>
-                            </button>
-                        </div>
-                    </section>
-
                     <section className="mt-2">
                         <button
                             onClick={handleLogout}
