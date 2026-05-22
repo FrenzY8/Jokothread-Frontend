@@ -11,7 +11,6 @@ import { toast } from "sonner";
 function Profile() {
     const { id: profileId } = useParams();
     const currentUser = useAuthStore((state) => state.user);
-    const currentUserId = useAuthStore((state) => state.user.id);
 
     const isOwnProfile = !profileId || profileId === String(currentUser?.id);
     const targetUserId = isOwnProfile ? currentUser?.id : profileId;
