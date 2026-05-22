@@ -135,7 +135,10 @@ function Messages() {
                 className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors
                                     ${activeContact?.id === contact.id ? 'bg-blue-500/20 border border-blue-500/30' : 'hover:bg-white/5 border border-transparent'}`}
               >
-                <img src={contact.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${contact.name}`} alt="avatar" className="w-10 h-10 rounded-full object-cover bg-slate-800" />
+                <img src={
+                  contact.avatar ||
+                  `https://api.dicebear.com/7.x/bottts/svg?seed=${contact.name}`
+                } alt="avatar" className="w-10 h-10 rounded-full object-cover bg-slate-800" />
                 <div className="truncate flex-1">
                   <h4 className="text-sm font-semibold text-slate-200 truncate">{contact.name}</h4>
                   <p className="text-xs text-slate-400 truncate">@{contact.username}</p>
@@ -159,7 +162,10 @@ function Messages() {
                 <span className="material-symbols-outlined text-[20px]">arrow_back</span>
               </button>
 
-              <img src={activeContact.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${activeContact.name}`} alt="avatar" className="w-9 h-9 rounded-full object-cover" />
+              <img src={
+                activeContact.avatar ||
+                `https://api.dicebear.com/7.x/bottts/svg?seed=${activeContact.name}`
+              } alt="avatar" className="w-9 h-9 rounded-full object-cover" />
               <div className="truncate flex-1">
                 <h3 className="text-sm font-bold text-slate-200 truncate">{activeContact.name}</h3>
                 <p className="text-[11px] text-slate-400 truncate">@{activeContact.username}</p>

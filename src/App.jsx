@@ -15,6 +15,8 @@ import Profile from './components/page/Profile';
 import SearchResults from './components/page/SearchResults';
 import About from './components/page/About';
 import Notifications from './components/page/Notifications';
+import PersonalSettings from './components/page/PersonalSettings';
+import SecuritySettings from './components/page/SecuritySettings';
 
 function App() {
   const [isSideBarOpen, setIsSideBarOpen] = useState(false)
@@ -184,6 +186,8 @@ function App() {
           <Route path="/about" element={<About />} />
           <Route path="/thread/:id" element={<ThreadDetail />} />
           <Route path="/profile/:id" element={<Profile />} />
+          <Route path="/personal-settings" element={<PersonalSettings />} />
+          <Route path="/security-settings" element={<SecuritySettings />} />
           <Route path="/search/:query" element={<SearchResults />} />
 
           <Route element={<PrivateRoute />}>

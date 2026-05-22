@@ -54,9 +54,9 @@
   --color-primary: #c0c1ff;
 
   /* --- CUSTOM BORDER RADIUS --- */
-  --radius-default: 1rem;
-  --radius-lg: 2rem;
-  --radius-xl: 3rem;
+  --radius-default: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
   --radius-full: 9999px;
 
   /* --- CUSTOM SPACING --- */
@@ -69,14 +69,22 @@
   --spacing-container-margin-mobile: 16px;
 
   /* --- CUSTOM FONT FAMILY --- */
-  --font-display: "Hanken Grotesk", sans-serif;
-  --font-label-sm: "Hanken Grotesk", sans-serif;
-  --font-headline-lg-mobile: "Hanken Grotesk", sans-serif;
-  --font-body-md: "Hanken Grotesk", sans-serif;
-  --font-label-lg: "Hanken Grotesk", sans-serif;
-  --font-body-lg: "Hanken Grotesk", sans-serif;
-  --font-headline-md: "Hanken Grotesk", sans-serif;
-  --font-headline-lg: "Hanken Grotesk", sans-serif;
+  --font-display: "Hanken Grotesk",
+    sans-serif;
+  --font-label-sm: "Hanken Grotesk",
+    sans-serif;
+  --font-headline-lg-mobile: "Hanken Grotesk",
+    sans-serif;
+  --font-body-md: "Hanken Grotesk",
+    sans-serif;
+  --font-label-lg: "Hanken Grotesk",
+    sans-serif;
+  --font-body-lg: "Hanken Grotesk",
+    sans-serif;
+  --font-headline-md: "Hanken Grotesk",
+    sans-serif;
+  --font-headline-lg: "Hanken Grotesk",
+    sans-serif;
 
   /* --- CUSTOM FONT SIZE & PROPERTIES --- */
   --text-display: 40px;

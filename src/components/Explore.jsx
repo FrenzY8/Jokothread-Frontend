@@ -40,7 +40,7 @@ function Explore() {
     }
 
     return (
-        <div className="w-full max-w-[580px] mx-auto px-4 py-4 flex flex-col gap-5">
+        <div className="w-full max-w-[580px] pt-20 mx-auto px-4 py-4 flex flex-col gap-5">
 
             <section className="sticky top-[72px] md:top-4 z-30 glass-panel p-4 rounded-2xl border border-white/10 shadow-xl bg-[#161d30]/60 backdrop-blur-md">
                 <form onSubmit={handleSubmit}>

@@ -15,6 +15,10 @@ function About() {
         {
             question: "Apakah saya bisa membatalkan permintaan follow?",
             answer: "Bisa. Cukup tekan kembali tombol 'Requested' di profil pengguna tersebut untuk membatalkan permintaan mengikuti sebelum mereka menyetujuinya."
+        },
+                {
+            question: "Untuk apa platform ini?",
+            answer: "Platfrom ini dibuat untuk menuntaskan kebutuhan pendaftaran formulir Google Form Sarastya Group."
         }
     ];
 
@@ -23,17 +27,16 @@ function About() {
     };
 
     return (
-        <div className="w-full max-w-[580px] mx-auto px-4 pt-4 pb-24 flex flex-col gap-6 text-slate-200">
-            <div className="bg-[#182136]/50 border border-white/10 rounded-2xl p-6">
-                <h1 className="text-2xl font-bold text-slate-100 mb-3">Tentang Kami</h1>
+        <div className="w-full max-w-[580px] mx-auto px-4 pt-4 pb-24 flex flex-col gap-5 text-slate-200">
+            <div className="bg-[#182136]/50 border border-white/10 rounded-xl p-5">
+                <h1 className="text-xl font-bold text-slate-100 mb-2">Tentang Jokothread</h1>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                    Selamat datang di platform kami! Kami berkomitmen untuk menyediakan ruang digital 
-                    yang aman, cepat, dan nyaman bagi semua orang untuk saling terhubung melalui rangkaian kata.
+                    Selamat datang di Jokothread, platform media sosial berbasis teks yang dirancang untuk memberikan pengalaman berbagi pemikiran dan berinteraksi secara real-time. Di sini, kamu bisa mengikuti pengguna lain, membagikan pemikiranmu, dan terlibat dalam diskusi yang menarik. Kami berkomitmen untuk menciptakan lingkungan yang aman dan menyenangkan bagi semua pengguna.
                 </p>
             </div>
 
             <div className="flex flex-col gap-3">
-                <h2 className="text-lg font-bold text-slate-100 px-1">Pertanyaan Sering Diajukan (FAQ)</h2>
+                <h2 className="text-base font-bold text-slate-100 px-1">Pertanyaan Sering Diajukan (FAQ)</h2>
                 
                 <div className="flex flex-col gap-2">
                     {faqData.map((faq, index) => {
@@ -41,11 +44,11 @@ function About() {
                         return (
                             <div 
                                 key={index} 
-                                className="bg-[#182136]/30 border border-white/10 rounded-xl overflow-hidden transition-all duration-200"
+                                className="bg-[#182136]/30 border border-white/10 rounded-lg overflow-hidden transition-all duration-200"
                             >
                                 <button
                                     onClick={() => toggleFaq(index)}
-                                    className="w-full px-5 py-4 flex justify-between items-center text-left hover:bg-white/5 transition-colors cursor-pointer"
+                                    className="w-full px-4 py-3 flex justify-between items-center text-left hover:bg-white/5 transition-colors cursor-pointer"
                                 >
                                     <span className="font-semibold text-sm text-slate-200">
                                         {faq.question}
@@ -64,7 +67,7 @@ function About() {
                                         isOpen ? 'max-h-[500px] border-t border-white/5 bg-[#182136]/10' : 'max-h-0'
                                     }`}
                                 >
-                                    <p className="px-5 py-4 text-xs text-slate-400 leading-relaxed whitespace-pre-line">
+                                    <p className="px-4 py-3 text-xs text-slate-400 leading-relaxed whitespace-pre-line">
                                         {faq.answer}
                                     </p>
                                 </div>
