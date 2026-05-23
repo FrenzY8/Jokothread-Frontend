@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/useAuthStore';
 import { Skeleton } from "../ui/skeleton";
 import { toast } from "sonner";
@@ -19,7 +20,7 @@ function Messages() {
   const [isSending, setIsSending] = useState(false);
 
   const chatEndRef = useRef(null);
-
+  const queryClient = useQueryClient();
   const location = useLocation();
 
   useEffect(() => {
@@ -61,29 +62,6 @@ function Messages() {
   }, [token, location.search]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  useEffect(() => {
-    const fetchContacts = async () => {
-      try {
-        setIsContactsLoading(true);
-        const res = await fetch(`${import.meta.env.VITE_BACKEND}/messages/contacts`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const result = await res.json();
-        if (!res.ok) throw new Error(result.message);
-        setContacts(result.data);
-      } catch (err) {
-        toast.error("Gagal memuat kontak");
-      } finally {
-        setIsContactsLoading(false);
-      }
-    };
-    if (token) fetchContacts();
-  }, [token]);
-
-  useEffect(() => {
     if (!activeContact) return;
 
     const fetchChatHistory = async () => {
@@ -95,6 +73,22 @@ function Messages() {
         if (!res.ok) throw new Error(result.message);
 
         setMessages(result.data);
+
+        const hasUnreadIncoming = result.data.some(
+          msg => msg.sender_id === activeContact.id && msg.is_read === false
+        );
+
+        if (hasUnreadIncoming) {
+          const readRes = await fetch(`${import.meta.env.VITE_BACKEND}/messages/${activeContact.id}/read`, {
+            method: 'PUT',
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          if (readRes.ok) {
+            queryClient.invalidateQueries({ queryKey: ['unreadCounts', currentUser?.id] });
+          }
+        }
+
       } catch (err) {
         console.error("Gagal memuat chat:", err.message);
       }
@@ -103,7 +97,11 @@ function Messages() {
     fetchChatHistory();
     const interval = setInterval(fetchChatHistory, 3000);
     return () => clearInterval(interval);
-  }, [activeContact, token]);
+  }, [activeContact, token, currentUser?.id, queryClient]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];

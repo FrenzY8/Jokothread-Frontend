@@ -280,9 +280,10 @@ function Profile() {
                             {isOwnProfile ? (
                                 <Link
                                     to="/settings"
-                                    className="px-4 py-1.5 border border-white/10 hover:bg-white/5 text-slate-200 text-[13px] font-semibold rounded-full transition-colors cursor-pointer"
+                                    className="flex items-center gap-1.5 px-4 py-1.5 border border-white/10 bg-[#161d30]/30 hover:bg-white/5 text-slate-200 hover:text-white text-[13px] font-semibold rounded-full transition-all cursor-pointer shadow-sm"
                                 >
-                                    Edit Profile
+                                    <span className="material-symbols-outlined text-[16px]">settings</span>
+                                    <span>Edit Profile</span>
                                 </Link>
                             ) : (
                                 <>

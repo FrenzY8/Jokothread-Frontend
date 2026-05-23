@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from './store/useAuthStore';
 import { GuestRoute, PrivateRoute } from './utils/ProtectedRoute';
 
@@ -20,18 +21,45 @@ import SecuritySettings from './components/page/SecuritySettings';
 import BlockedAccount from './components/page/BlockedAccount';
 
 function App() {
-  const [isSideBarOpen, setIsSideBarOpen] = useState(false)
-  const location = useLocation()
-  const isActive = (path) => location.pathname === path
+  const [isSideBarOpen, setIsSideBarOpen] = useState(false);
+  const location = useLocation();
+  const token = useAuthStore((state) => state.token);
+  const isActive = (path) => location.pathname === path;
   const isLoginPage = location.pathname === '/login' || location.pathname === '/register';
   const user = useAuthStore((state) => state.user);
-  const navigate = useNavigate()
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const { data: unreadData } = useQuery({
+    queryKey: ['unreadCounts', user?.id],
+    queryFn: async () => {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND}/notifications/unread-count`, {
+        headers: {
+          ...(token && { 'Authorization': `Bearer ${token}` })
+        }
+      });
+      if (!response.ok) throw new Error('Gagal mengambil data unread');
+      return response.json();
+    },
+    enabled: !!user?.id && !isLoginPage,
+    refetchInterval: 15000
+  });
 
   const navItems = [
     { name: 'Home', icon: 'home', path: '/' },
     { name: 'Search', icon: 'search', path: '/explore' },
-    { name: 'Messages', icon: 'chat_bubble', path: '/messages' },
-    { name: 'Notifications', icon: 'notifications', path: '/notifications' },
+    {
+      name: 'Messages',
+      icon: 'chat_bubble',
+      path: '/messages',
+      unreadCount: unreadData?.unreadMessages || 0
+    },
+    {
+      name: 'Notifications',
+      icon: 'notifications',
+      path: '/notifications',
+      unreadCount: unreadData?.unreadNotifications || 0
+    },
     ...(user?.id
       ? [{ name: 'Profile', icon: 'person', path: `/profile/${user.id}` }]
       : []
@@ -63,12 +91,20 @@ function App() {
                     />
                   </div>
                 ) : (
-                  <span
-                    className="material-symbols-outlined text-[24px] block"
-                    style={isActive ? { fontVariationSettings: '"FILL" 1' } : {}}
-                  >
-                    {tab.icon}
-                  </span>
+                  <div className="relative flex items-center justify-center">
+                    <span
+                      className="material-symbols-outlined text-[24px] block"
+                      style={isActive ? { fontVariationSettings: '"FILL" 1' } : {}}
+                    >
+                      {tab.icon}
+                    </span>
+
+                    {tab.unreadCount > 0 && (
+                      <span className="absolute -top-1.5 -right-2 bg-rose-500 text-white font-bold text-[10px] h-4 min-w-[16px] px-1 rounded-full flex items-center justify-center ring-2 ring-[#0f1422]">
+                        {tab.unreadCount > 9 ? '9+' : tab.unreadCount}
+                      </span>
+                    )}
+                  </div>
                 )}
               </Link>
             );
@@ -78,10 +114,20 @@ function App() {
 
       {!isLoginPage && (
         <header className="md:hidden sticky top-0 w-full z-50 flex justify-between items-center px-4 py-3 bg-[#0f1422]/80 backdrop-blur-md border-b border-white/10 shadow-[0_1px_10px_rgba(255,255,255,0.03)]">
-          <div className="text-xl font-bold tracking-tight">Jokothread</div>
-          <div className="flex items-center gap-1">
-            <span onClick={() => navigate('/explore')} className="material-symbols-outlined text-[22px]">search</span>
-            <span onClick={() => navigate('/about')} className="material-symbols-outlined text-[22px]">info</span>
+          <div className="text-xl font-bold tracking-tight text-white">Jokothread</div>
+          <div className="flex items-center gap-4 text-slate-300">
+            <span
+              onClick={() => navigate('/explore')}
+              className="material-symbols-outlined text-[22px] cursor-pointer hover:text-white transition-colors"
+            >
+              search
+            </span>
+            <span
+              onClick={() => navigate('/about')}
+              className="material-symbols-outlined text-[22px] cursor-pointer hover:text-white transition-colors"
+            >
+              info
+            </span>
           </div>
         </header>
       )}
@@ -116,9 +162,18 @@ function App() {
                     to={tab.path}
                     title={!isSideBarOpen ? tab.name : ''}
                   >
-                    <span className="material-symbols-outlined text-[22px]" style={isActive ? { fontVariationSettings: '"FILL" 1' } : {}}>
-                      {tab.icon}
-                    </span>
+                    <div className="relative flex items-center justify-center">
+                      <span className="material-symbols-outlined text-[22px]" style={isActive ? { fontVariationSettings: '"FILL" 1' } : {}}>
+                        {tab.icon}
+                      </span>
+
+                      {tab.unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-2 bg-rose-500 text-white font-bold text-[9px] h-3.5 min-w-[14px] px-1 rounded-full flex items-center justify-center">
+                          {tab.unreadCount > 9 ? '9+' : tab.unreadCount}
+                        </span>
+                      )}
+                    </div>
+
                     {isSideBarOpen && <span className="text-[14px] tracking-wide">{tab.name}</span>}
                   </Link>
                 );
