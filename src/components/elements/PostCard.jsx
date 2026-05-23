@@ -299,7 +299,7 @@ function PostCard({ post, setPosts, FromDetailThread = false }) {
                                         </span>
                                     </button>
 
-                                    {showMenu && !FromDetailThread && (
+                                    {showMenu && (
                                         <div
                                             onClick={(e) => e.stopPropagation()}
                                             className="absolute top-9 right-0 min-w-[170px] overflow-hidden rounded-2xl border border-white/10 bg-[#182136]/95 backdrop-blur-xl shadow-[0_10px_40px_rgba(0,0,0,0.45)] z-50 animate-in fade-in zoom-in-95 duration-100"
@@ -398,31 +398,19 @@ function PostCard({ post, setPosts, FromDetailThread = false }) {
                     </>
                 )}
                 <div className="flex items-center gap-5 mt-2 text-slate-500 text-[12px]">
-                    {FromDetailThread ? (
-                        <div className={`flex items-center gap-1.5 ${post.is_liked ? 'text-rose-500 font-medium' : ''}`}>
-                            <span
-                                className="material-symbols-outlined text-[18px]"
-                                style={post.is_liked ? { fontVariationSettings: '"FILL" 1' } : {}}
-                            >
-                                favorite
-                            </span>
-                            <span>{post.likes_count || 0}</span>
-                        </div>
-                    ) : (
-                        <button
-                            onClick={() => likeMutation.mutate()}
-                            disabled={likeMutation.isPending}
-                            className="flex items-center gap-1.5 transition-colors group cursor-pointer hover:text-rose-400"
+                    <button
+                        onClick={() => likeMutation.mutate()}
+                        disabled={likeMutation.isPending}
+                        className="flex items-center gap-1.5 transition-colors group cursor-pointer hover:text-rose-400"
+                    >
+                        <span
+                            className="material-symbols-outlined text-[18px] transition-transform active:scale-125 duration-150"
+                            style={post.is_liked ? { fontVariationSettings: '"FILL" 1' } : {}}
                         >
-                            <span
-                                className="material-symbols-outlined text-[18px] transition-transform active:scale-125 duration-150"
-                                style={post.is_liked ? { fontVariationSettings: '"FILL" 1' } : {}}
-                            >
-                                favorite
-                            </span>
-                            <span>{post.likes_count || 0}</span>
-                        </button>
-                    )}
+                            favorite
+                        </span>
+                        <span>{post.likes_count || 0}</span>
+                    </button>
 
                     {FromDetailThread ? (
                         <div className="flex items-center gap-1.5 text-slate-500">

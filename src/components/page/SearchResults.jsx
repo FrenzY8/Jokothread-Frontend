@@ -1,11 +1,14 @@
 import React, { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import PostCard from '../elements/PostCard'
+import { useAuthStore } from '../../store/useAuthStore';
 
 function SearchResults() {
     const { query } = useParams()
     const [activeTab, setActiveTab] = useState('threads')
+    const queryClient = useQueryClient()
+    const token = useAuthStore((state) => state.token);
 
     const {
         data,
@@ -14,7 +17,12 @@ function SearchResults() {
         queryKey: ['search', query],
         queryFn: async () => {
             const response = await fetch(
-                `${import.meta.env.VITE_BACKEND}/posts/search?q=${query}`
+                `${import.meta.env.VITE_BACKEND}/posts/search?q=${query}`,
+                {
+                    headers: {
+                        ...(token && { 'Authorization': `Bearer ${token}` })
+                    }
+                }
             )
             const result = await response.json()
             if (!response.ok) {
@@ -53,6 +61,7 @@ function SearchResults() {
                     Users
                 </button>
             </div>
+
             {isLoading ? (
                 <>
                     {activeTab === 'threads' && (
@@ -105,8 +114,9 @@ function SearchResults() {
                 </>
             ) : (
                 <>
+                    {/* Render Tab Users */}
                     {activeTab === 'users' && (
-                        <div className="flex flex-col pt-10 gap-4 pt-4">
+                        <div className="flex flex-col pt-10 gap-4">
                             {users.length === 0 ? (
                                 <div className="text-center text-slate-500 py-12 border border-white/10 rounded-2xl bg-[#161d30]/20">
                                     User tidak ditemukan
@@ -134,11 +144,9 @@ function SearchResults() {
                                                 <h3 className="text-[14px] font-semibold text-slate-200 truncate">
                                                     {user.name}
                                                 </h3>
-
                                                 <p className="text-[12px] text-slate-400 truncate">
                                                     @{user.username}
                                                 </p>
-
                                                 <p className="text-[12px] text-slate-500 truncate">
                                                     {user.bio || 'Belum ada bio'}
                                                 </p>
@@ -150,21 +158,43 @@ function SearchResults() {
                         </div>
                     )}
 
+                    {/* Render Tab Threads */}
                     {activeTab === 'threads' && (
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col pt-10 gap-4">
                             {threads.length === 0 ? (
                                 <div className="text-center text-slate-500 py-12 border border-white/10 rounded-2xl bg-[#161d30]/20">
                                     Thread tidak ditemukan
                                 </div>
                             ) : (
-                                threads.map((post) => (
-                                    <div key={post.id} className="w-full pt-10">
-                                        <PostCard
-                                            post={post}
-                                            setPosts={() => { }}
-                                        />
-                                    </div>
-                                ))
+                                threads
+                                    .filter(post => post && post.id)
+                                    .map((post) => (
+                                        <div key={post.id} className="w-full">
+                                            <PostCard
+                                                post={post}
+                                                setPosts={(updater) => {
+                                                    queryClient.setQueryData(['search', query], (oldData) => {
+                                                        if (!oldData || !oldData.threads) return oldData;
+
+                                                        const updatedThreads = oldData.threads
+                                                            .map((t) => {
+                                                                if (t && t.id === post.id) {
+                                                                    const result = updater([t]);
+                                                                    return result ? result[0] : null;
+                                                                }
+                                                                return t;
+                                                            })
+                                                            .filter(Boolean);
+
+                                                        return {
+                                                            ...oldData,
+                                                            threads: updatedThreads
+                                                        };
+                                                    });
+                                                }}
+                                            />
+                                        </div>
+                                    ))
                             )}
                         </div>
                     )}

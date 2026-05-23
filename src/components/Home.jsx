@@ -7,6 +7,7 @@ import { useAuthStore } from '../store/useAuthStore';
 
 function Home() {
     const user = useAuthStore((state) => state.user);
+    const token = useAuthStore((state) => state.token);
 
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -22,13 +23,19 @@ function Home() {
             if (isRefresh) setIsLoading(true);
             else if (currentOffset > 0) setIsFetchingNextPage(true);
 
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(
                 `${import.meta.env.VITE_BACKEND}/posts?offset=${currentOffset}&limit=10`,
                 {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: headers
                 }
             );
 
@@ -49,11 +56,9 @@ function Home() {
             } else {
                 setPosts(prev => {
                     const allPosts = [...prev, ...formattedData];
-
                     const uniquePosts = Array.from(
                         new Map(allPosts.map(post => [post.id, post])).values()
                     );
-
                     return uniquePosts;
                 });
             }
@@ -98,6 +103,11 @@ function Home() {
         setPageParam(0);
         fetchPosts(0, true);
     };
+
+    useEffect(() => {
+        setPageParam(0);
+        fetchPosts(0, true);
+    }, [user?.id, token, location.key]);
 
     return (
         <div className="w-full max-w-[580px] mx-auto px-4 pt-4 pb-24 flex flex-col gap-3">

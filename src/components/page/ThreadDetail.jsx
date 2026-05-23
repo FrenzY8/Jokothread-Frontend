@@ -34,23 +34,20 @@ function ThreadDetail() {
 
     const { data: post, isLoading: isPostLoading, error: postError } = useQuery({
         queryKey: ['post', id],
-
         queryFn: async () => {
             const response = await fetch(
-                `${import.meta.env.VITE_BACKEND}/posts/${id}`
+                `${import.meta.env.VITE_BACKEND}/posts/${id}`,
+                {
+                    headers: token ? { Authorization: `Bearer ${token}` } : {}
+                }
             );
 
             const result = await response.json();
-
             if (!response.ok) {
-                throw new Error(
-                    result.message || 'Gagal mengambil postingan'
-                );
+                throw new Error(result.message || 'Gagal mengambil postingan');
             }
-
             return result.data;
         },
-
         enabled: !!id
     });
 
@@ -138,6 +135,10 @@ function ThreadDetail() {
                 queryKey: ['replies', id]
             });
 
+            queryClient.invalidateQueries({
+                queryKey: ['post', id]
+            });
+
         } catch (err) {
             toast.error(err.message || 'Gagal mengirim komentar');
         } finally {
@@ -203,7 +204,10 @@ function ThreadDetail() {
 
             <div className="sticky top-0 z-10 bg-transparent px-2 py-2 flex items-center justify-start">
                 <button
-                    onClick={() => navigate(-1)}
+                    onClick={() => {
+                        queryClient.invalidateQueries({ queryKey: ['posts'] });
+                        navigate(-1);
+                    }}
                     className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
                 >
                     <span className="material-symbols-outlined block text-[22px]">
@@ -213,7 +217,17 @@ function ThreadDetail() {
             </div>
 
             <div className="p-4 border-b border-white/10">
-                <PostCard post={post} setPosts={() => { }} />
+                <PostCard
+                    post={post}
+                    FromDetailThread={true}
+                    setPosts={(updater) => {
+                        queryClient.setQueryData(['post', id], (oldData) => {
+                            if (!oldData) return oldData;
+                            const result = updater([oldData]);
+                            return result[0];
+                        });
+                    }}
+                />
             </div>
 
             <div className="p-4 border-b border-white/5 flex gap-3">

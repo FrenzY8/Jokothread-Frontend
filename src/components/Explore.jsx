@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import PostCard from './elements/PostCard'
 
 function Explore() {
     const [search, setSearch] = useState('')
+    const queryClient = useQueryClient();
     const navigate = useNavigate()
 
     const {
@@ -12,7 +13,6 @@ function Explore() {
         isLoading
     } = useQuery({
         queryKey: ['explore-suggestions'],
-
         queryFn: async () => {
             const response = await fetch(
                 `${import.meta.env.VITE_BACKEND}/explore/suggestions`
@@ -33,15 +33,12 @@ function Explore() {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-
         if (!search.trim()) return
-
         navigate(`/search/${encodeURIComponent(search.trim())}`)
     }
 
     return (
         <div className="w-full max-w-[580px] pt-20 mx-auto px-4 py-4 flex flex-col gap-5">
-
             <section className="sticky top-[72px] md:top-4 z-30 glass-panel p-4 rounded-2xl border border-white/10 shadow-xl bg-[#161d30]/60 backdrop-blur-md">
                 <form onSubmit={handleSubmit}>
                     <div className="relative group">
@@ -64,15 +61,12 @@ function Explore() {
 
             {isLoading ? (
                 <div className="flex flex-col gap-4">
-
                     <div className="bg-[#161d30]/40 border border-white/10 rounded-2xl p-4 animate-pulse">
                         <div className="h-5 w-32 bg-white/10 rounded mb-4" />
-
                         <div className="flex flex-col gap-4">
                             {[...Array(3)].map((_, i) => (
                                 <div key={i} className="flex items-center gap-3">
                                     <div className="w-14 h-14 rounded-full bg-white/10" />
-
                                     <div className="flex-1">
                                         <div className="h-4 w-32 bg-white/10 rounded mb-2" />
                                         <div className="h-3 w-24 bg-white/10 rounded" />
@@ -84,31 +78,27 @@ function Explore() {
 
                     <div className="bg-[#161d30]/40 border border-white/10 rounded-2xl p-4 animate-pulse">
                         <div className="h-5 w-40 bg-white/10 rounded mb-4" />
-
                         <div className="flex flex-col gap-3">
                             {[...Array(2)].map((_, i) => (
                                 <div key={i} className="h-32 rounded-2xl bg-white/5" />
                             ))}
                         </div>
                     </div>
-
                 </div>
             ) : (
                 <>
+                    {/* Bagian Suggested Users */}
                     <section className="glass-panel p-4 rounded-2xl border border-white/10 bg-[#161d30]/40 backdrop-blur-md">
-
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-[18px] font-semibold text-white">
                                 Suggested Users
                             </h2>
-
                             <span className="text-[12px] text-slate-500">
                                 Paling populer
                             </span>
                         </div>
 
                         <div className="flex flex-col gap-3">
-
                             {suggestedUsers.map((user) => (
                                 <Link
                                     key={user.id}
@@ -116,7 +106,6 @@ function Explore() {
                                     className="flex items-center justify-between gap-3 bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 rounded-2xl p-3 transition-colors"
                                 >
                                     <div className="flex items-center gap-3 min-w-0">
-
                                         <div className="w-14 h-14 rounded-full overflow-hidden border border-white/10 bg-slate-800 shrink-0">
                                             <img
                                                 src={
@@ -132,11 +121,9 @@ function Explore() {
                                             <h3 className="text-[14px] font-semibold text-slate-200 truncate">
                                                 {user.name}
                                             </h3>
-
                                             <p className="text-[12px] text-slate-400 truncate">
                                                 @{user.username}
                                             </p>
-
                                             <p className="text-[11px] text-slate-500 mt-1 truncate">
                                                 {user.followers_count || 0} followers
                                             </p>
@@ -144,30 +131,51 @@ function Explore() {
                                     </div>
                                 </Link>
                             ))}
-
                         </div>
                     </section>
 
+                    {/* Bagian Trending Threads */}
                     <section className="glass-panel p-4 rounded-2xl border border-white/10 bg-[#161d30]/40 backdrop-blur-md">
-
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-[18px] font-semibold text-white">
                                 Trending Threads
                             </h2>
-
                             <span className="text-[12px] text-slate-500">
                                 Paling banyak dibicarakan
                             </span>
                         </div>
 
                         <div className="flex flex-col divide-y divide-white/5 border border-white/5 rounded-2xl overflow-hidden">
+                            {trendingThreads
+                                .filter(post => post && post.id)
+                                .map((post) => (
+                                    <div key={post.id} className="p-1">
+                                        <PostCard
+                                            post={post}
+                                            FromDetailThread={true}
+                                            setPosts={(updater) => {
+                                                queryClient.setQueryData(['explore-suggestions'], (oldData) => {
+                                                    if (!oldData || !oldData.threads) return oldData;
 
-                            {trendingThreads.map((post) => (
-                                <div key={post.id} className="p-1">
-                                    <PostCard post={post} />
-                                </div>
-                            ))}
+                                                    const updatedThreads = oldData.threads
+                                                        .map((t) => {
+                                                            if (t && t.id === post.id) {
+                                                                const result = updater([t]);
+                                                                return result ? result[0] : null;
+                                                            }
+                                                            return t;
+                                                        })
+                                                        .filter(Boolean);
 
+                                                    return {
+                                                        ...oldData,
+                                                        threads: updatedThreads
+                                                    };
+                                                });
+                                            }}
+                                        />
+                                    </div>
+                                ))}
                         </div>
                     </section>
                 </>
