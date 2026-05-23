@@ -4,6 +4,7 @@ import PostCard from "./elements/PostCard";
 import { Skeleton } from "./ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { useAuthStore } from '../store/useAuthStore';
+import LightRays from './ui/light-rays';
 
 function Home() {
     const user = useAuthStore((state) => state.user);
@@ -110,7 +111,24 @@ function Home() {
     }, [user?.id, token, location.key]);
 
     return (
-        <div className="w-full max-w-[580px] mx-auto px-4 pt-4 pb-24 flex flex-col gap-3">
+        <div className="w-full max-w-[580px] mx-auto px-4 pt-4 pb-24 flex flex-col gap-3 relative">
+            <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center">
+                <LightRays
+                    raysOrigin="top-center"
+                    raysColor="#ffffff"
+                    raysSpeed={1}
+                    lightSpread={0.5}
+                    rayLength={3}
+                    followMouse={true}
+                    mouseInfluence={0.1}
+                    noiseAmount={1}
+                    distortion={0}
+                    className="custom-rays opacity-20"
+                    pulsating={false}
+                    fadeDistance={1}
+                    saturation={1}
+                />
+            </div>
             <CreatePostCard onPostCreated={handlePostCreated} />
 
             <div className="w-full flex justify-center py-1">

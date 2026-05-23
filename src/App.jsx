@@ -191,7 +191,7 @@ function App() {
               {isSideBarOpen && <span className="text-[14px]">About</span>}
             </Link>
 
-            {user?.id && (
+            {user?.id ? (
               <Link
                 to="/settings"
                 title="Profile"
@@ -214,9 +214,31 @@ function App() {
                     <span className="text-[13px] font-medium text-slate-200 truncate leading-tight">
                       {user?.name}
                     </span>
-
                     <span className="text-[11px] text-slate-500 truncate">
                       @{user?.username}
+                    </span>
+                  </div>
+                )}
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                title="Login"
+                className={`flex items-center gap-3 px-2 py-2.5 mt-3 border-t border-white/10 hover:bg-slate-900/30 rounded-xl transition-all duration-200 cursor-pointer ${!isSideBarOpen && 'justify-center'}`}
+              >
+                <div className="w-8 h-8 flex items-center justify-center text-slate-400 shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                  </svg>
+                </div>
+
+                {isSideBarOpen && (
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className="text-[13px] font-medium text-slate-200 truncate leading-tight">
+                      Masuk / Log In
+                    </span>
+                    <span className="text-[11px] text-slate-500 truncate">
+                      Akses akun kamu
                     </span>
                   </div>
                 )}
