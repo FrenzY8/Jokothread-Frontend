@@ -52,12 +52,58 @@ VITE_SUPABASE_URL=[https://your-supabase-project-url.supabase.co](https://your-s
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-public-key
 ```
 
-4. Jalankan Web
+## 4. Setup Supabase
+
+### Buat Project Supabase
+1. Buka : [Supabase](https://supabase.com)
+2. Login atau daftar akun
+3. Klik **New Project**
+4. Isi:
+   - Project Name
+   - Database Password
+   - Region
+5. Tunggu hingga project selesai dibuat
+
+---
+
+### Ambil Kredensial Supabase
+Setelah project berhasil dibuat:
+
+1. Masuk ke menu **Project Settings**
+2. Pilih **API**
+3. Salin:
+   - **Project URL**
+   - **anon public key**
+
+---
+
+### Konfigurasi Environment Variables
+Buat file `.env` atau `.env.local` di root project, lalu isi:
+
+```env
+VITE_BACKEND=http://localhost:5000
+VITE_SUPABASE_URL=https://your-supabase-project-url.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-public-key
+```
+
+---
+
+### Install Dependency Supabase
+Install package Supabase:
+
+```bash
+npm install @supabase/supabase-js
+```
+
+---
+
+### 5. Jalankan Project
+
 ```bash
 npm run dev
 ```
 
-5. Struktur Folder
+### 6. Struktur Folder
 ```
 └── 📁Jokothread-Frontend
     └── 📁public
@@ -76,19 +122,27 @@ npm run dev
                 ├── CreatePostCard.jsx
                 ├── PostCard.jsx
             └── 📁page
+                ├── About.jsx
+                ├── BlockedAccount.jsx
+                ├── Messages.jsx
+                ├── Notifications.jsx
+                ├── PersonalSettings.jsx
                 ├── Profile.jsx
                 ├── SearchResults.jsx
+                ├── SecuritySettings.jsx
                 ├── ThreadDetail.jsx
             └── 📁ui
                 ├── alert.jsx
+                ├── aurora.jsx
                 ├── button.jsx
+                ├── floating-lines.jsx
                 ├── input.jsx
                 ├── label.jsx
+                ├── light-rays.jsx
                 ├── skeleton.jsx
                 ├── sonner.jsx
             ├── Explore.jsx
             ├── Home.jsx
-            ├── Messages.jsx
             ├── Settings.jsx
         └── 📁lib
             ├── client.js
@@ -113,5 +167,6 @@ npm run dev
     ├── package.json
     ├── README.md
     ├── skills-lock.json
+    ├── vercel.json
     └── vite.config.js
 ```

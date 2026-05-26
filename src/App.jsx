@@ -29,6 +29,17 @@ function App() {
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+
+  useEffect(() => {
+    checkAuth();
+
+    const interval = setInterval(() => {
+      checkAuth();
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const { data: unreadData } = useQuery({
     queryKey: ['unreadCounts', user?.id],
