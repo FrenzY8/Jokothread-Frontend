@@ -2,6 +2,10 @@
 
 Sebuah aplikasi web *social media* modern yang terinspirasi dari Threads & X (Twitter). Proyek ini dirancang dengan arsitektur monorepo/terpisah yang efisien,  dan tampilan antarmuka gelap (*dark mode*), menggunakan ekosistem React dan Supabase.
 
+# Frontend
+
+Ini adalah bagian Frontend web Jokothread, untuk backendnya, bisa ke repository ini: https://github.com/FrenzY8/Jokothread-Backend
+
 ## Fitur Utama
 
 - **Autentikasi Pengguna**: Pendaftaran dan masuk akun aman berbasis JWT yang terintegrasi dengan manajemen sesi global.
