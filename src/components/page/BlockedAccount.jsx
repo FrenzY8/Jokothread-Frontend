@@ -102,7 +102,7 @@ function BlockedAccount() {
                             >
                                 <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-800 border border-white/10">
                                     <img 
-                                        src={user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`} 
+                                        src={user.avatar || "https://api.dicebear.com/7.x/bottts/svg?seed=guest"} 
                                         alt={user.name} 
                                         className="w-full h-full object-cover"
                                     />

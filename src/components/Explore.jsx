@@ -110,7 +110,7 @@ function Explore() {
                                             <img
                                                 src={
                                                     user.avatar ||
-                                                    `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`
+                                                    `https://api.dicebear.com/7.x/bottts/svg?seed=guest`
                                                 }
                                                 alt={user.name}
                                                 className="w-full h-full object-cover"

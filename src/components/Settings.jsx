@@ -128,7 +128,7 @@ function Settings() {
                                     className="w-full h-full object-cover"
                                     src={user?.avatar && user.avatar.startsWith('data:image')
                                         ? user.avatar
-                                        : "https://api.dicebear.com/7.x/bottts/svg?seed=" + user?.username
+                                        : "https://api.dicebear.com/7.x/bottts/svg?seed=guest"
                                     }
                                 />
                             </div>

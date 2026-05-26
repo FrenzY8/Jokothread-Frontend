@@ -97,7 +97,7 @@ function CreatePostCard({ onPostCreated }) {
                     <img
                         alt="Avatar"
                         className="w-full h-full object-cover"
-                        src={user?.avatar && user.avatar.startsWith('data:image') ? user.avatar : "https://api.dicebear.com/7.x/bottts/svg?seed=" + user?.username}
+                        src={user?.avatar && user.avatar.startsWith('data:image') ? user.avatar : "https://api.dicebear.com/7.x/bottts/svg?seed=guest"}
                     />
                 </div>
                 <div className="flex-1 flex flex-col gap-2">

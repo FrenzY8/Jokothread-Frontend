@@ -176,7 +176,7 @@ function Messages() {
               >
                 <img src={
                   contact.avatar ||
-                  `https://api.dicebear.com/7.x/bottts/svg?seed=${contact.name}`
+                  "https://api.dicebear.com/7.x/bottts/svg?seed=guest"
                 } alt="avatar" className="w-10 h-10 rounded-full object-cover bg-slate-800" />
                 <div className="truncate flex-1">
                   <h4 className="text-sm font-semibold text-slate-200 truncate">{contact.name}</h4>
@@ -204,7 +204,7 @@ function Messages() {
               <Link to={`/profile/${activeContact.id}`} className="flex items-center gap-3 group cursor-pointer min-w-0 flex-1">
                 <img src={
                   activeContact.avatar ||
-                  `https://api.dicebear.com/7.x/bottts/svg?seed=${activeContact.name}`
+                  "https://api.dicebear.com/7.x/bottts/svg?seed=guest"
                 } alt="avatar" className="w-9 h-9 rounded-full object-cover group-hover:opacity-80 transition-opacity shrink-0" />
 
                 <div className="truncate">

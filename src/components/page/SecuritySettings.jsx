@@ -16,6 +16,8 @@ function PersonalSettings() {
         otpCode: ''
     });
 
+    const [cooldown, setCooldown] = useState(0);
+
     // User google gabisa ganti pass, kita sesuaikan dengan akun mereka saja.
     useEffect(() => {
         if (currentUser && currentUser.is_google_account) {
@@ -23,6 +25,16 @@ function PersonalSettings() {
             navigate('/settings', { replace: true });
         }
     }, [currentUser, navigate]);
+
+    useEffect(() => {
+        if (cooldown === 0) return;
+
+        const timer = setInterval(() => {
+            setCooldown((prev) => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [cooldown]);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [otpSent, setOtpSent] = useState(false);
@@ -33,6 +45,8 @@ function PersonalSettings() {
     };
 
     const handleRequestOtp = async () => {
+        if (isSendingOtp || cooldown > 0) return;
+
         try {
             setIsSendingOtp(true);
             const response = await fetch(`${import.meta.env.VITE_BACKEND}/users/password/request-otp`, {
@@ -47,6 +61,7 @@ function PersonalSettings() {
             if (!response.ok) throw new Error(result.message || 'Gagal mengirim OTP');
 
             setOtpSent(true);
+            setCooldown(60); // Set cooldown 60 detik setelah berhasil kirim
             toast.success('Kode OTP berhasil dikirim ke email Anda!');
         } catch (err) {
             toast.error(err.message);
@@ -87,6 +102,7 @@ function PersonalSettings() {
             toast.success('Password berhasil diperbarui!');
             setFormData({ oldPassword: '', newPassword: '', confirmPassword: '', otpCode: '' });
             setOtpSent(false);
+            setCooldown(0);
         } catch (err) {
             toast.error(err.message);
         } finally {
@@ -175,10 +191,10 @@ function PersonalSettings() {
                         <button
                             type="button"
                             onClick={handleRequestOtp}
-                            disabled={isSendingOtp}
-                            className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 text-xs font-semibold rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                            disabled={isSendingOtp || cooldown > 0}
+                            className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 text-xs font-semibold rounded-lg transition-colors cursor-pointer disabled:opacity-50 min-w-[100px]"
                         >
-                            {isSendingOtp ? 'Mengirim...' : otpSent ? 'Kirim Ulang' : 'Minta OTP'}
+                            {isSendingOtp ? 'Mengirim...' : cooldown > 0 ? `${cooldown}s` : otpSent ? 'Kirim Ulang' : 'Minta OTP'}
                         </button>
                     </div>
                 </div>

@@ -269,7 +269,7 @@ function Profile() {
                 <div className="flex justify-between items-start w-full">
                     <div className="w-20 h-20 rounded-full overflow-hidden border border-white/10 bg-slate-800">
                         <img
-                            src={profileData?.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${profileData?.username}`}
+                            src={profileData?.avatar || "https://api.dicebear.com/7.x/bottts/svg?seed=guest"}
                             alt={profileData?.name || "User"}
                             className="w-full h-full object-cover"
                         />

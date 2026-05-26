@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom';
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -98,7 +98,7 @@ function App() {
                     <img
                       alt="Profile"
                       className="w-full h-full object-cover"
-                      src={user?.avatar && user.avatar.startsWith('data:image') ? user.avatar : "https://api.dicebear.com/7.x/bottts/svg?seed=" + user?.username}
+                      src={user?.avatar && user.avatar.startsWith('data:image') ? user.avatar : "https://api.dicebear.com/7.x/bottts/svg?seed=guest"}
                     />
                   </div>
                 ) : (
@@ -215,7 +215,7 @@ function App() {
                     src={
                       user?.avatar?.startsWith('data:image')
                         ? user.avatar
-                        : `https://api.dicebear.com/7.x/bottts/svg?seed=${user?.username}`
+                        : `https://api.dicebear.com/7.x/bottts/svg?seed=guest`
                     }
                   />
                 </div>

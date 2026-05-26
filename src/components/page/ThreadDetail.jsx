@@ -237,7 +237,7 @@ function ThreadDetail() {
                         className="w-full h-full object-cover"
                         src={
                             user?.avatar ||
-                            `https://api.dicebear.com/7.x/bottts/svg?seed=${user?.username}`
+                            "https://api.dicebear.com/7.x/bottts/svg?seed=guest"
                         }
                     />
                 </div>
@@ -347,7 +347,7 @@ function ThreadDetail() {
                                     className="w-full h-full object-cover"
                                     src={
                                         comment.avatar ||
-                                        `https://api.dicebear.com/7.x/bottts/svg?seed=${comment.users?.username}`
+                                        "https://api.dicebear.com/7.x/bottts/svg?seed=guest"
                                     }
                                 />
                             </div>

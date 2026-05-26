@@ -16,12 +16,28 @@ function Login() {
     const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState('');
 
+    const [showForgotModal, setShowForgotModal] = useState(false);
+    const [forgotStep, setForgotStep] = useState(1);
+    const [forgotLoading, setForgotLoading] = useState(false);
+    const [forgotData, setForgotData] = useState({
+        email: '',
+        otp: '',
+        newPassword: ''
+    });
+
     const navigate = useNavigate();
     const loginSuccess = useAuthStore((state) => state.loginSuccess);
 
     const handleChange = (e) => {
         setFormData({
             ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleForgotChange = (e) => {
+        setForgotData({
+            ...forgotData,
             [e.target.name]: e.target.value
         });
     };
@@ -87,8 +103,65 @@ function Login() {
         }
     };
 
+    const handleForgotSubmit = async (e) => {
+        e.preventDefault();
+        setForgotLoading(true);
+
+        try {
+            if (forgotStep === 1) {
+                const res = await fetch(`${import.meta.env.VITE_BACKEND}/users/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: forgotData.email })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Email tidak ditemukan');
+
+                toast.success('Kode OTP telah dikirim ke email kamu');
+                setForgotStep(2);
+            } else if (forgotStep === 2) {
+                const res = await fetch(`${import.meta.env.VITE_BACKEND}/users/verify-reset-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: forgotData.email, otp: forgotData.otp })
+                });
+                const data = await res.json();
+
+                setForgotData(prev => ({
+                    ...prev,
+                    resetToken: data.resetToken
+                }));
+
+                if (!res.ok) throw new Error(data.message || 'Kode OTP salah atau kedaluwarsa');
+
+                toast.success('OTP Valid! Silakan buat kata sandi baru');
+                setForgotStep(3);
+            } else if (forgotStep === 3) {
+                const res = await fetch(`${import.meta.env.VITE_BACKEND}/users/reset-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        resetToken: forgotData.resetToken,
+                        newPassword: forgotData.newPassword
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Gagal menyetel ulang kata sandi');
+
+                toast.success('Kata sandi berhasil diubah! Silakan login kembali');
+                setShowForgotModal(false);
+                setForgotStep(1);
+                setForgotData({ email: '', otp: '', newPassword: '' });
+            }
+        } catch (err) {
+            toast.error(err.message);
+        } finally {
+            setForgotLoading(false);
+        }
+    };
+
     return (
-        <main className="relative min-h-screen w-screen overflow-hidden flex items-center justify-center bg-slate-950 px-4">
+        <main className="relative min-h-screen w-full overflow-hidden flex items-center justify-center bg-slate-950 px-4">
             <div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
                 <Aurora
                     speed={0.6}
@@ -110,9 +183,8 @@ function Login() {
 
             <div className="relative z-10 w-full max-w-[840px] bg-[#161d30]/60 backdrop-blur-[40px] border border-white/10 rounded-2xl p-6 md:p-8 shadow-[0px_20px_60px_rgba(0,0,0,0.5)] overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                    {/* Sisi Kiri: Branding & Google Login */}
                     <div className="flex flex-col justify-center items-center md:items-start text-center md:text-left h-full border-b md:border-b-0 md:border-r border-white/10 pb-6 md:pb-0 md:pr-8">
                         <div className="w-16 h-16 mb-4 bg-white/5 border border-white/10 rounded-full flex items-center justify-center shadow-lg backdrop-blur-md text-white">
                             <svg viewBox="0 0 24 24" aria-hidden="true" className="w-7 h-7 fill-current">
@@ -142,7 +214,6 @@ function Login() {
                         </div>
                     </div>
 
-                    {/* Sisi Kanan: Form Manual */}
                     <div className="flex flex-col gap-4">
                         {error && <div className="p-3 text-xs bg-red-500/20 border border-red-500/40 rounded-xl text-red-200 text-center">{error}</div>}
                         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -156,7 +227,7 @@ function Login() {
                             <div className="flex flex-col gap-2">
                                 <div className="flex justify-between items-center pl-1">
                                     <label htmlFor="password" className="text-xs font-medium text-slate-400">Kata Sandi</label>
-                                    <button type="button" className="text-xs font-medium text-slate-400 hover:text-white transition-colors">Lupa Sandi?</button>
+                                    <button type="button" onClick={() => setShowForgotModal(true)} className="text-xs font-medium text-slate-400 hover:text-white transition-colors cursor-pointer">Lupa Sandi?</button>
                                 </div>
                                 <div className="relative group">
                                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-white transition-colors" style={{ fontVariationSettings: '"FILL" 0' }}>lock</span>
@@ -174,6 +245,80 @@ function Login() {
                     </div>
                 </div>
             </div>
+
+            {showForgotModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md px-4">
+                    <div className="w-full max-w-[400px] bg-[#161d30] border border-white/10 rounded-2xl p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+                        <button
+                            type="button"
+                            onClick={() => { setShowForgotModal(false); setForgotStep(1); }}
+                            className="absolute right-4 top-4 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                        >
+                            <span className="material-symbols-outlined">close</span>
+                        </button>
+
+                        <h2 className="text-xl font-bold text-white mb-1">Pulihkan Sandi</h2>
+                        <p className="text-xs text-slate-400 mb-5">Langkah {forgotStep} dari 3</p>
+
+                        <form onSubmit={handleForgotSubmit} className="flex flex-col gap-4">
+                            {forgotStep === 1 && (
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-xs font-medium text-slate-400 pl-1">Masukkan Email Akun</label>
+                                    <input
+                                        name="email"
+                                        type="email"
+                                        required
+                                        value={forgotData.email}
+                                        onChange={handleForgotChange}
+                                        placeholder="nama@domain.com"
+                                        className="w-full bg-slate-900/60 border border-white/10 rounded-xl py-3 px-4 text-sm text-white placeholder:text-slate-600 focus:border-white/30 outline-none"
+                                    />
+                                </div>
+                            )}
+
+                            {forgotStep === 2 && (
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-xs font-medium text-slate-400 pl-1">Masukkan Kode OTP</label>
+                                    <input
+                                        name="otp"
+                                        type="text"
+                                        required
+                                        maxLength={6}
+                                        value={forgotData.otp}
+                                        onChange={handleForgotChange}
+                                        placeholder="Ketik 6 digit OTP"
+                                        className="w-full bg-slate-900/60 border border-white/10 rounded-xl py-3 px-4 text-sm text-white tracking-widest text-center font-mono placeholder:tracking-normal placeholder:text-slate-600 focus:border-white/30 outline-none"
+                                    />
+                                    <p className="text-[11px] text-slate-500 pl-1">Periksa kotak masuk atau spam di email Anda.</p>
+                                </div>
+                            )}
+
+                            {forgotStep === 3 && (
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-xs font-medium text-slate-400 pl-1">Kata Sandi Baru</label>
+                                    <input
+                                        name="newPassword"
+                                        type="password"
+                                        required
+                                        value={forgotData.newPassword}
+                                        onChange={handleForgotChange}
+                                        placeholder="••••••••"
+                                        className="w-full bg-slate-900/60 border border-white/10 rounded-xl py-3 px-4 text-sm text-white placeholder:text-slate-600 focus:border-white/30 outline-none"
+                                    />
+                                </div>
+                            )}
+
+                            <button
+                                type="submit"
+                                disabled={forgotLoading}
+                                className="w-full bg-white hover:bg-slate-200 disabled:bg-slate-600 disabled:cursor-not-allowed text-black font-semibold text-sm py-3 rounded-xl transition-all duration-300 cursor-pointer"
+                            >
+                                {forgotLoading ? 'Memproses...' : forgotStep === 1 ? 'Kirim OTP' : forgotStep === 2 ? 'Verifikasi OTP' : 'Simpan Sandi Baru'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }
