@@ -156,7 +156,10 @@ function Profile() {
                 `${import.meta.env.VITE_BACKEND}/posts?user_id=${targetUserId}&offset=${currentOffset}&limit=10`,
                 {
                     method: 'GET',
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${useAuthStore.getState().token}`
+                    }
                 }
             );
 

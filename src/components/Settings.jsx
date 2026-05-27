@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { convertToBase64 } from '../utils/base64';
 import { toast } from "sonner"
 
 function Settings() {
+    const checkAuth = useAuthStore((state) => state.checkAuth);
     const user = useAuthStore((state) => state.user);
     const token = useAuthStore((state) => state.token);
     const [isPrivate, setIsPrivate] = useState(user?.is_private || false)
@@ -14,6 +15,10 @@ function Settings() {
     const updateUserState = useAuthStore((state) => state.updateUser);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        checkAuth();
+    }, [checkAuth]);
 
     const handleAvatarChange = async (e) => {
         const file = e.target.files[0];

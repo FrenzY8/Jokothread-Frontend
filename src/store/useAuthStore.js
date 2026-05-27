@@ -40,7 +40,7 @@ export const useAuthStore = create(
         });
       },
 
-      checkAuth: () => {
+      checkAuth: async () => {
         const token = get().token;
 
         if (!token) {
@@ -53,7 +53,27 @@ export const useAuthStore = create(
           return false;
         }
 
-        return true;
+        try {
+          const response = await fetch(`${import.meta.env.VITE_BACKEND}/users/me`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            set({ user: result.user, isAuthenticated: true });
+            return true;
+          } else {
+            get().logout();
+            return false;
+          }
+        } catch (error) {
+          console.error("Gagal sinkronisasi data user:", error);
+          return true;
+        }
       }
     }),
     {
