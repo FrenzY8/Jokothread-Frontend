@@ -5,7 +5,6 @@ import { convertToBase64 } from '../utils/base64';
 import { toast } from "sonner"
 
 function Settings() {
-    const checkAuth = useAuthStore((state) => state.checkAuth);
     const user = useAuthStore((state) => state.user);
     const token = useAuthStore((state) => state.token);
     const [isPrivate, setIsPrivate] = useState(user?.is_private || false)
@@ -15,10 +14,6 @@ function Settings() {
     const updateUserState = useAuthStore((state) => state.updateUser);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
-
-    useEffect(() => {
-        checkAuth();
-    }, [checkAuth]);
 
     const handleAvatarChange = async (e) => {
         const file = e.target.files[0];
